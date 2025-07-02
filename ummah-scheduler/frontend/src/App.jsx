@@ -4,7 +4,7 @@ import './App.css';
 function App() {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selected, setSelected] = useState(null); // for modal
+  const [selected, setSelected] = useState(null);
 
   useEffect(() => {
     fetch('http://localhost:5050/api/submissions')
@@ -20,29 +20,38 @@ function App() {
   }, []);
 
   return (
-    <div className="container">
-      <h1>Monday.com Submissions</h1>
+    <div className="app-container">
+      <header className="app-header">
+        <img src="/logo.png" alt="Ummah Professionals" className="logo" />
+        <h1>Internal Scheduler Tool</h1>
+      </header>
 
-      {loading ? (
-        <p>Loading...</p>
-      ) : submissions.length === 0 ? (
-        <p>No submissions found.</p>
-      ) : (
-        <div className="submissions-list">
-          {submissions.map((item) => (
-            <div
-              key={item.id}
-              className="submission-card"
-              onClick={() => setSelected(item)}
-              style={{ cursor: 'pointer' }}
-            >
-              <h3>{item.name}</h3>
-              <p><strong>Availability:</strong> {item.availability}</p>
-              <p><strong>Interest:</strong> {item.lookingFor}</p>
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="content-container">
+        {loading ? (
+          <p className="status-text">Loading submissions...</p>
+        ) : submissions.length === 0 ? (
+          <p className="status-text">No submissions found.</p>
+        ) : (
+          <div className="submissions-grid">
+            {submissions.map((item) => (
+              <div
+                key={item.id}
+                className="submission-card"
+                onClick={() => setSelected(item)}
+              >
+                <div className="student-info">
+                  <p className="student-name">{item.name}</p>
+                  <p className="student-industry">{item.industry}</p>
+                  <p className="student-email">{item.email}</p>
+                </div>
+                <div className="availability">
+                  <p><strong>Availability:</strong> {item.availability}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {selected && (
         <div className="modal-overlay" onClick={() => setSelected(null)}>
@@ -54,7 +63,7 @@ function App() {
             <p><strong>Industry:</strong> {selected.industry}</p>
             <p><strong>Academic Standing:</strong> {selected.academicStanding}</p>
             <p><strong>Looking For:</strong> {selected.lookingFor}</p>
-            <p><strong>Resume:</strong> <a href={selected.resume} target="_blank">View Resume</a></p>
+            <p><strong>Resume:</strong> <a href={selected.resume} target="_blank" rel="noreferrer">View Resume</a></p>
             <p><strong>How They Heard:</strong> {selected.howTheyHeard}</p>
             <p><strong>Weekly Availability:</strong> {selected.availability}</p>
             <p><strong>Preferred Times:</strong> {selected.timeline}</p>
