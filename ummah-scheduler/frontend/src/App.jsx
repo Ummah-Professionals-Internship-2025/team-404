@@ -6,7 +6,7 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:5000/submissions') // Flask route to fetch submissions
+    fetch('http://localhost:5050/api/submissions') // Flask route to fetch submissions
       .then((res) => res.json())
       .then((data) => {
         setSubmissions(data);
