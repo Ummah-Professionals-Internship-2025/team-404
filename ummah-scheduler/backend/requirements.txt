@@ -1,3 +1,2 @@
 # keep track of dependencies for later
-requests
-python-dotenv
+
