@@ -1,122 +1,152 @@
 /* App.css */
-
+/* Reset and base styles */
 body {
-  background-color: #f0f2f5;
-  color: #333;
   margin: 0;
+  padding: 0;
+  background-color: #f5f7fb;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #1c1c1c;
 }
 
-.container {
-  max-width: 960px;
-  margin: 3rem auto;
-  padding: 1rem 2rem;
-  background: white;
+/* Full app container, centers content */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  min-height: 100vh;
+}
+
+/* Header bar styling */
+.app-header {
+  width: 100%;
+  max-width: 1200px;
+  background-color: #014b6e;
+  color: white;
+  padding: 1.5rem 2rem;
   border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+.logo {
+  height: 50px;
+}
+
 h1 {
-  text-align: center;
-  margin-bottom: 2rem;
-  color: #222;
+  font-size: 1.8rem;
+  margin: 0;
 }
 
-.submissions-list {
+/* Main content section */
+.content-container {
+  margin-top: 2rem;
+  width: 100%;
+  max-width: 1200px;
   display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  justify-content: center;
 }
 
+/* Grid of submission cards */
+.submissions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
+  width: 100%;
+}
+
+/* Individual card */
 .submission-card {
-  border: 1px solid #ddd;
-  padding: 1.5rem;
-  border-radius: 10px;
   background-color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease;
+  cursor: pointer;
 }
 
 .submission-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  transform: translateY(-5px);
 }
 
-.submission-card h3 {
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-  color: #2c3e50;
-}
-
-.submission-card p {
-  margin: 0.3rem 0;
-  line-height: 1.4;
+.student-info p {
+  margin: 0.25rem 0;
   font-size: 0.95rem;
 }
 
-.submission-card a {
-  color: #007bff;
-  text-decoration: none;
+.student-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #014b6e;
 }
 
-.submission-card a:hover {
-  text-decoration: underline;
+.student-industry,
+.student-email {
+  color: #555;
 }
-/* Modal overlay and content */
+
+.availability {
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+}
+
+/* Modal styles */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.45);
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   z-index: 1000;
 }
 
 .modal-content {
-  background: white;
-  padding: 2rem;
+  background-color: #ffffff;
   border-radius: 12px;
-  max-width: 600px;
+  padding: 2rem;
   width: 90%;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  position: relative;
-  overflow-y: auto;
+  max-width: 600px;
   max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
-/* Close button */
 .close-btn {
   position: absolute;
-  top: 0.75rem;
+  top: 1rem;
   right: 1rem;
   font-size: 1.5rem;
+  border: none;
   background: none;
-  border: none;
-  color: #555;
   cursor: pointer;
 }
 
-.close-btn:hover {
-  color: #000;
-}
-
-/* Propose button */
 .propose-btn {
-  display: inline-block;
-  margin-top: 1rem;
-  background-color: #2563eb;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #014b6e;
   color: white;
-  padding: 0.6rem 1.2rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
+  transition: background 0.3s ease;
 }
 
 .propose-btn:hover {
-  background-color: #1e40af;
+  background-color: #023e59;
+}
+
+/* Status message */
+.status-text {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #666;
 }
