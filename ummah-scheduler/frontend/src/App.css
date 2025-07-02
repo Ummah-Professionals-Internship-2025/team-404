@@ -1,8 +1,25 @@
+/* App.css */
+
+body {
+  background-color: #f0f2f5;
+  color: #333;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
 .container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-family: Arial, sans-serif;
+  max-width: 960px;
+  margin: 3rem auto;
+  padding: 1rem 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #222;
 }
 
 .submissions-list {
@@ -12,8 +29,36 @@
 }
 
 .submission-card {
-  border: 1px solid #ccc;
-  padding: 1rem;
+  border: 1px solid #ddd;
+  padding: 1.5rem;
   border-radius: 10px;
-  background-color: #f9f9f9;
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+}
+
+.submission-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+
+.submission-card h3 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+}
+
+.submission-card p {
+  margin: 0.3rem 0;
+  line-height: 1.4;
+  font-size: 0.95rem;
+}
+
+.submission-card a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.submission-card a:hover {
+  text-decoration: underline;
 }
