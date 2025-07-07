@@ -18,6 +18,8 @@ export default function SchedulePage() {
       });
   }, [id]);
 
+  
+
   const handleSendInvite = async () => {
     if (!mentorEmail || !selectedTime) {
       alert('Please select a time and enter your email.');
@@ -38,18 +40,18 @@ export default function SchedulePage() {
     else alert('Failed to send invite');
   };
 
-  if (!student) return <p>Loading...</p>;
+  if (!student) return <p className="text-center mt-10">Loading...</p>;
 
   return (
-    <div className="w-screen min-h-screen flex items-center justify-center bg-gray-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="w-full max-w-xl bg-white p-6 rounded shadow-md">
         <h2 className="text-2xl font-bold mb-4 text-center">
           Propose a Meeting with {student.name}
         </h2>
 
-        <div className="mb-4 text-center">
-          <p><strong>Student Availability:</strong> {student.availability}</p>
-        </div>
+        <p className="mb-4 text-center">
+          <strong>Student Availability:</strong> {student.availability}
+        </p>
 
         <CalendarPreview
           availability={student.availability}
@@ -57,12 +59,12 @@ export default function SchedulePage() {
           onSelect={setSelectedTime}
         />
 
-        <div className="mb-4 mt-4">
+        <div className="mb-4 mt-6">
           <label className="block mb-1 font-medium">Your Email</label>
           <input
             type="email"
             className="border rounded px-3 py-2 w-full"
-            placeholder="mentor@gmail.com"
+            placeholder="mentor@example.com"
             value={mentorEmail}
             onChange={(e) => setMentorEmail(e.target.value)}
           />
@@ -77,7 +79,8 @@ export default function SchedulePage() {
 
         {selectedTime && (
           <p className="mt-4 text-sm text-gray-600 text-center">
-            Selected Time: <strong>{new Date(selectedTime).toLocaleString()}</strong>
+            Selected Time:{' '}
+            <strong>{new Date(selectedTime).toLocaleString()}</strong>
           </p>
         )}
       </div>
