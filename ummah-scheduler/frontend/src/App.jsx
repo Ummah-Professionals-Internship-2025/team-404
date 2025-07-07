@@ -1,10 +1,14 @@
+// src/App.jsx
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import SchedulePage from './components/SchedulePage';
 import './App.css';
 
-function App() {
+function Dashboard() {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch('http://localhost:5050/api/submissions')
@@ -69,7 +73,15 @@ function App() {
             <p><strong>Preferred Times:</strong> {selected.timeline}</p>
             <p><strong>Other Info:</strong> {selected.otherInfo}</p>
             <p><strong>Submitted:</strong> {selected.submitted}</p>
-            <button className="propose-btn">Propose Meeting</button>
+            <button
+              className="propose-btn"
+              onClick={() => {
+                setSelected(null);
+                navigate(`/schedule/${selected.id}`);
+              }}
+            >
+              Propose Meeting
+            </button>
           </div>
         </div>
       )}
@@ -77,4 +89,11 @@ function App() {
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Dashboard />} />
+      <Route path="/schedule/:id" element={<SchedulePage />} />
+    </Routes>
+  );
+}

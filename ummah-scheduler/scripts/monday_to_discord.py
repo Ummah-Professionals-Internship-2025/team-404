@@ -7,7 +7,7 @@ import os, time, requests
 import json
 from dotenv import load_dotenv
 from pathlib import Path
-
+#monday_to_discord.py
 # load keys from .env
 load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / '.env')
 
