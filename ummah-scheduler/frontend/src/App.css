@@ -51,20 +51,37 @@ h1 {
 
 /* Grid of submission cards */
 .submissions-grid {
+  /*
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 2rem;
+  width: 100%;
+  */
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
   width: 100%;
 }
 
 /* Individual card */
 .submission-card {
+  display: flex;
+  flex-direction: row; /* Horizontal layout */
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
   background-color: #ffffff;
   border-radius: 12px;
-  padding: 1.5rem;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
   transition: transform 0.3s ease;
   cursor: pointer;
+}
+
+.card-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
 .submission-card:hover {
@@ -123,13 +140,83 @@ h1 {
   top: 1rem;
   right: 1rem;
   font-size: 1.5rem;
+  color: black;
   border: none;
   background: none;
   cursor: pointer;
 }
 
+.name-modal {
+  width: 500px;
+  padding: 16px;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.name-input {
+  padding: 8px;
+  width: 97%;
+  color: black;
+  background-color: #f9fafb; 
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+}
+
+.name-modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.cancel-btn, .confirm-btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.confirm-btn {
+  background-color: #014b6e;
+  color: white;
+}
+
+.cancel-btn {
+  background-color: #e5e7eb;
+  color: #111827;
+}
+
+.modal-buttons {
+  display: flex;
+  flex-direction: column; /* stack vertically */
+  align-items: flex-start; /* align left */
+  gap: 0.01rem;
+  margin-top: 0.5rem;
+}
+
+.status-dropdown {
+  display: flex;
+  flex-direction: row;     
+  align-items: center;
+  gap: 0.5rem;             
+}
+
+.status-dropdown label {
+  font-weight: 600;
+}
+
+.status-dropdown select {
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  
+}
+
 .propose-btn {
-  margin-top: 1.5rem;
+  margin-top: 0.95rem;
   padding: 0.75rem 1.5rem;
   background-color: #014b6e;
   color: white;
@@ -149,4 +236,18 @@ h1 {
   text-align: center;
   font-size: 1.1rem;
   color: #666;
+}
+
+.status-tag {
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.picked-by {
+  font-size: 0.85rem;
+  color: #555;
+  margin-top: 4px;
 }
