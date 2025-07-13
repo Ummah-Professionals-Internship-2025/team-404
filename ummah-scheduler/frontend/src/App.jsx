@@ -3,6 +3,7 @@ import { Routes, Route, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import SchedulePage from './components/SchedulePage';
 import './App.css';
+import ScheduleConfirm from "./components/ScheduleConfirm";
 
 function Dashboard() {
   const [showNameModal, setShowNameModal] = useState(false);
@@ -242,6 +243,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Dashboard />} />
       <Route path="/schedule/:id" element={<SchedulePage />} />
+      <Route path="/schedule-confirm" element={<ScheduleConfirm />} />
     </Routes>
   );
 }

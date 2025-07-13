@@ -1,15 +1,21 @@
-# app.py
+# backend/app.py
 from flask import Flask
 from flask_cors import CORS
-
-
 from routes.monday import monday_bp
+from routes.auth import auth_bp
+from routes.schedule import schedule  # Don't forget this!
+from app_config import FLASK_SECRET_KEY
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS so frontend can fetch from backend
+app.secret_key = FLASK_SECRET_KEY
 
-# Register your routes
-app.register_blueprint(monday_bp, url_prefix='/api')  # Prefix to match frontend fetch
+# ✅ Updated CORS config — full support for frontend from localhost:5173
+CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}}, supports_credentials=True)
+
+# ✅ Register blueprints
+app.register_blueprint(monday_bp, url_prefix="/api")
+app.register_blueprint(auth_bp)
+app.register_blueprint(schedule)  # ✅ Include schedule blueprint!
 
 @app.route("/")
 def index():
