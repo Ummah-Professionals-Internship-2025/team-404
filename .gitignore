@@ -1,0 +1,4 @@
+.DS_Store
+__pycache__/
+*.pyc
+.envummah-scheduler/backend/credentials/oauth_client_secret.json
