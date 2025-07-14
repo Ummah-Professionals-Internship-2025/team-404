@@ -1,0 +1,236 @@
+/* App.css */
+.app-container {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.app-header {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  background-color: #014b6e;
+  color: white;
+  padding: 1.5rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.logo {
+  position: absolute;
+  left: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 50px;
+}
+
+
+.content-container {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.submissions-grid {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.submission-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+
+.submission-card:hover {
+  transform: translateY(-5px);
+}
+
+.card-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.student-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #014b6e;
+}
+
+.status-tag {
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+/* Buttons (including Propose Meeting) */
+button {
+  font-family: inherit;
+  padding: 0.6rem 1.4rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+/* Propose Meeting button specifically */
+.propose-btn {
+  background-color: #014b6e;
+  color: white;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.propose-btn:hover {
+  background-color: #023e59;
+  border-color: #012f45;
+}
+
+/* Cancel/Confirm modal buttons */
+.cancel-btn {
+  background-color: #e2e8f0;
+  color: #1a202c;
+}
+
+.cancel-btn:hover {
+  background-color: #cbd5e0;
+}
+
+.confirm-btn {
+  background-color: #014b6e;
+  color: white;
+}
+
+.confirm-btn:hover {
+  background-color: #023e59;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  color: #111827;
+  cursor: pointer;
+  z-index: 1001;
+}
+
+.name-modal {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.name-input {
+  padding: 8px;
+  width: 96%;
+  color: black;
+  background-color: #f9fafb;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+}
+
+.name-modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 1rem;
+}
+
+.modal-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.01rem;
+  margin-top: 0.5rem;
+}
+
+.status-dropdown {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: -0.1rem;
+}
+
+.status-dropdown label {
+  font-weight: 600;
+}
+
+.status-dropdown select {
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.status-text {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.picked-by {
+  font-size: 0.85rem;
+  color: #555;
+  margin-top: 4px;
+}
