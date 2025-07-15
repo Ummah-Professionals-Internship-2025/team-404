@@ -5,7 +5,8 @@ import SchedulePage from './components/SchedulePage';
 import './App.css';
 import ScheduleConfirm from "./components/ScheduleConfirm";
 import logo from './assets/white-horizontal.png'; 
-
+import FollowUp from "./components/FollowUp";
+import Sidebar from './components/Sidebar';
 
 function Dashboard() {
   const [showNameModal, setShowNameModal] = useState(false);
@@ -23,10 +24,10 @@ function Dashboard() {
       .then((res) => res.json())
       .then((data) => {
         const submissionsWithDefaultStatus = data.map((item) => ({
-        ...item,
-        status: item.status || 'To Do',
-      }));
-      setSubmissions(submissionsWithDefaultStatus);
+          ...item,
+          status: item.status || 'To Do',
+        }));
+        setSubmissions(submissionsWithDefaultStatus);
         setLoading(false);
       })
       .catch((err) => {
@@ -38,9 +39,12 @@ function Dashboard() {
   return (
     <div className="app-container">
       <header className="app-header">
-        <img src={logo} alt="Ummah Professionals" className="logo" />
-        <h1>Internal Scheduler Tool</h1>
-      </header>
+  <img src={logo} alt="Ummah Professionals" className="logo" />
+  <h1>Internal Scheduler Tool</h1>
+  <Sidebar />
+</header>
+
+
 
       <div className="content-container">
         {loading ? (
@@ -50,67 +54,66 @@ function Dashboard() {
         ) : (
           <div className="submissions-grid">
             {submissions.map((item) => (
-          <div
-            key={item.id}
-            className="submission-card"
-            onClick={() => setSelected(item)}
-          >
-            <div className="card-content">
-              <div className="student-info">
-                <p className="student-name">{item.name}</p>
-                <p className="student-industry">{item.industry}</p>
-                <p className="student-email">{item.email}</p>
-                <div className="availability">
-                  <p><strong>Availability:</strong> {item.availability}</p>
+              <div
+                key={item.id}
+                className="submission-card"
+                onClick={() => setSelected(item)}
+              >
+                <div className="card-content">
+                  <div className="student-info">
+                    <p className="student-name">{item.name}</p>
+                    <p className="student-industry">{item.industry}</p>
+                    <p className="student-email">{item.email}</p>
+                    <div className="availability">
+                      <p><strong>Availability:</strong> {item.availability}</p>
+                    </div>
+                  </div>
+
+                  {(() => {
+                    const statusStyles = {
+                      'Done': {
+                        backgroundColor: '#dcfce7',
+                        color: '#15803d',
+                      },
+                      'In Progress': {
+                        backgroundColor: '#fef9c3',
+                        color: '#92400e',
+                      },
+                      'To Do': {
+                        backgroundColor: '#e0e7ff',
+                        color: '#1e40af',
+                      },
+                    };
+
+                    const currentStyle = statusStyles[item.status] || statusStyles['To Do'];
+
+                    return (
+                      <div style={{ width: '100px', textAlign: 'center' }}>
+                        <div
+                          className="status-tag"
+                          style={{
+                            backgroundColor: currentStyle.backgroundColor,
+                            color: currentStyle.color,
+                            padding: '4px 8px',
+                            borderRadius: '8px',
+                            fontWeight: '500',
+                            marginBottom: '4px',
+                          }}
+                        >
+                          {item.status || 'No Status'}
+                        </div>
+
+                        {item.pickedBy && (
+                          <div style={{ fontSize: '0.8rem', color: '#555' }}>
+                            Picked by: {item.pickedBy}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
-
-              {(() => {
-                const statusStyles = {
-                  'Done': {
-                    backgroundColor: '#dcfce7',
-                    color: '#15803d',
-                  },
-                  'In Progress': {
-                    backgroundColor: '#fef9c3',
-                    color: '#92400e',
-                  },
-                  'To Do': {
-                    backgroundColor: '#e0e7ff',
-                    color: '#1e40af',
-                  },
-                };
-
-                const currentStyle = statusStyles[item.status] || statusStyles['To Do'];
-
-                return (
-                  <div style={{ width: '100px' , textAlign: 'center' }}>
-                    <div
-                      className="status-tag"
-                      style={{
-                        backgroundColor: currentStyle.backgroundColor,
-                        color: currentStyle.color,
-                        padding: '4px 8px',
-                        borderRadius: '8px',
-                        fontWeight: '500',
-                        marginBottom: '4px',
-                      }}
-                    >
-                      {item.status || 'No Status'}
-                    </div>
-
-                    {item.pickedBy && (
-                      <div style={{ fontSize: '0.8rem', color: '#555' }}>
-                        Picked by: {item.pickedBy}
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-              
-            </div>
-          </div>
-        ))}
+            ))}
           </div>
         )}
       </div>
@@ -131,7 +134,7 @@ function Dashboard() {
             <p><strong>Preferred Times:</strong> {selected.timeline}</p>
             <p><strong>Other Info:</strong> {selected.otherInfo}</p>
             <p><strong>Submitted:</strong> {selected.submitted}</p>
-            
+
             <div className="modal-buttons">
               <div className="status-dropdown">
                 <label htmlFor="status-select">Status:</label>
@@ -144,9 +147,8 @@ function Dashboard() {
                     if (newStatus === 'In Progress' || newStatus === 'Done') {
                       setPendingStatus(newStatus);
                       setPendingItemId(selected.id);
-                      setShowNameModal(true); // show the modal to collect advisor name
+                      setShowNameModal(true); // show modal to collect advisor name
                     } else {
-                      // no name required
                       setSelected((prev) => ({ ...prev, status: newStatus }));
                       setSubmissions((prev) =>
                         prev.map((s) =>
@@ -172,84 +174,95 @@ function Dashboard() {
                 Propose Meeting
               </button>
             </div>
-
           </div>
         </div>
       )}
 
-          {showNameModal && (
-      <div className="modal-overlay" onClick={() => setShowNameModal(false)}>
-        <div
-          className="modal-content name-modal"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (!advisorNameInput.trim()) return;
+      {showNameModal && (
+        <div className="modal-overlay" onClick={() => setShowNameModal(false)}>
+          <div className="modal-content name-modal" onClick={(e) => e.stopPropagation()}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!advisorNameInput.trim()) return;
 
-              setSubmissions((prev) =>
-                prev.map((s) =>
-                  s.id === pendingItemId
-                    ? { ...s, status: pendingStatus, pickedBy: advisorNameInput.trim() }
-                    : s
-                )
-              );
+                const pickedByName = advisorNameInput.trim();
 
-              setSelected((prev) =>
-                prev && prev.id === pendingItemId
-                  ? { ...prev, status: pendingStatus, pickedBy: advisorNameInput.trim() }
-                  : prev
-              );
+                setSubmissions((prev) =>
+                  prev.map((s) =>
+                    s.id === pendingItemId
+                      ? { ...s, status: pendingStatus, pickedBy: pickedByName }
+                      : s
+                  )
+                );
 
-              setShowNameModal(false);
-              setAdvisorNameInput('');
-              setPendingItemId(null);
-              setPendingStatus('');
-            }}
-          >
-            <h3 style={{ fontSize: '1.1rem', marginBottom: '10px' }}>Enter Your Name</h3>
-            <input
-              type="text"
-              value={advisorNameInput}
-              onChange={(e) => setAdvisorNameInput(e.target.value)}
-              placeholder="Advisor name"
-              className="name-input"
-              autoFocus
-            />
-            <div className="name-modal-buttons">
-              <button
-                type="button"
-                className="cancel-btn"
-                onClick={() => {
-                  setShowNameModal(false);
-                  setAdvisorNameInput('');
-                  setPendingItemId(null);
-                  setPendingStatus('');
-                }}
-              >
-                Cancel
-              </button>
-              <button type="submit" className="confirm-btn">
-                Confirm
-              </button>
-            </div>
-          </form>
+                setSelected((prev) =>
+                  prev && prev.id === pendingItemId
+                    ? { ...prev, status: pendingStatus, pickedBy: pickedByName }
+                    : prev
+                );
+
+                // ✅ Save to backend
+                fetch('http://localhost:5050/api/save-status', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    id: pendingItemId,
+                    status: pendingStatus,
+                    pickedBy: pickedByName,
+                  }),
+                }).catch(err => console.error("Error saving status:", err));
+
+                setShowNameModal(false);
+                setAdvisorNameInput('');
+                setPendingItemId(null);
+                setPendingStatus('');
+              }}
+            >
+              <h3 style={{ fontSize: '1.1rem', marginBottom: '10px' }}>Enter Your Name</h3>
+              <input
+                type="text"
+                value={advisorNameInput}
+                onChange={(e) => setAdvisorNameInput(e.target.value)}
+                placeholder="Advisor name"
+                className="name-input"
+                autoFocus
+              />
+              <div className="name-modal-buttons">
+                <button
+                  type="button"
+                  className="cancel-btn"
+                  onClick={() => {
+                    setShowNameModal(false);
+                    setAdvisorNameInput('');
+                    setPendingItemId(null);
+                    setPendingStatus('');
+                  }}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="confirm-btn">
+                  Confirm
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
-    )}
-
-
+      )}
     </div>
   );
 }
 
 export default function App() {
   return (
+    <>
+    <Sidebar />
     <Routes>
       <Route path="/" element={<Dashboard />} />
       <Route path="/schedule/:id" element={<SchedulePage />} />
       <Route path="/schedule-confirm" element={<ScheduleConfirm />} />
+      <Route path="/followup" element={<FollowUp />} />
     </Routes>
+    </>
   );
 }
