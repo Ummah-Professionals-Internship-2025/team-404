@@ -9,7 +9,7 @@ export default function ScheduleConfirm() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const mentorEmail = params.get("email");
-    const studentId = sessionStorage.getItem("studentId"); // we’ll store this earlier
+    const studentId = sessionStorage.getItem("studentId");
     const meetingTime = sessionStorage.getItem("meetingTime");
 
     if (!mentorEmail || !studentId || !meetingTime) {
@@ -18,7 +18,6 @@ export default function ScheduleConfirm() {
       return;
     }
 
-    // Fetch student info from backend (optional but safe)
     fetch('http://localhost:5050/api/submissions')
       .then(res => res.json())
       .then(data => {
@@ -29,7 +28,7 @@ export default function ScheduleConfirm() {
           return;
         }
 
-        // Send meeting request
+        // ⬇️ First: Send calendar invite
         fetch("http://localhost:5050/api/schedule-meeting", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -42,8 +41,26 @@ export default function ScheduleConfirm() {
           .then((res) => res.json())
           .then((data) => {
             if (data.eventLink) {
-              alert(`Invite sent!\nGoogle Meet: ${data.eventLink}`);
-              navigate("/"); // Redirect back to dashboard
+              // ⬇️ Second: Save status as "In Progress" with pickedBy
+              fetch('http://localhost:5050/api/save-status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  id: studentId,
+                  status: 'In Progress',
+                  pickedBy: mentorEmail
+                }),
+              })
+              .then(() => {
+                alert(`Invite sent!\nGoogle Meet: ${data.eventLink}`);
+                navigate("/"); // go back to dashboard
+              })
+              .catch((err) => {
+                console.error("Failed to save status:", err);
+                alert("Meeting sent, but status not saved.");
+                navigate("/");
+              });
+
             } else {
               alert(`Error: ${data.error}`);
               navigate("/");
