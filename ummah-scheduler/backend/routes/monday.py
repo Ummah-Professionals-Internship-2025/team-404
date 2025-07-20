@@ -12,7 +12,7 @@ SUBMISSIONS_FILE = os.path.join(os.path.dirname(__file__), '..', 'data', 'submis
 def fetch_submissions():
     try:
         # Live items from Monday.com
-        items = get_latest_items(limit=20)
+        items = get_latest_items(limit=50)
 
         # Load saved statuses (if file exists)
         if os.path.exists(SUBMISSIONS_FILE):
