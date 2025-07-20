@@ -30,4 +30,10 @@ def index():
     return "Backend is running"
 
 if __name__ == "__main__":
+    print("\n📍 Registered routes:")
+    for rule in app.url_map.iter_rules():
+        print(f"{rule.endpoint:30s} {rule.methods} {rule}")
+    print()  # spacing
+
     app.run(debug=True, port=5050)
+

@@ -17,5 +17,6 @@ def parse_monday_item(item):
         "availability": columns.get("dropdown_mksddh69", "N/A"),
         "timeline": columns.get("project_timeline", "N/A"),
         "otherInfo": columns.get("text9", "N/A"),
-        "submitted": columns.get("last_updated", item["created_at"])
+        "submitted": columns.get("last_updated", item["created_at"]),
+        "status": columns.get("status_1", ""),
     }

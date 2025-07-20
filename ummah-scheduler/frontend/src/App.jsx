@@ -23,13 +23,16 @@ function Dashboard() {
     fetch('http://localhost:5050/api/submissions')
       .then((res) => res.json())
       .then((data) => {
-        const submissionsWithDefaultStatus = data.map((item) => ({
-          ...item,
-          status: item.status || 'To Do',
-        }));
-        setSubmissions(submissionsWithDefaultStatus);
-        setLoading(false);
-      })
+  const submissionsWithDefaultStatus = data
+    .map((item) => ({
+      ...item,
+      status: item.status || 'To Do',
+    }))
+    .filter((item) => item.status !== 'Done'); // ✅ Remove done items from Dashboard
+
+  setSubmissions(submissionsWithDefaultStatus);
+  setLoading(false);
+})
       .catch((err) => {
         console.error('Error fetching submissions:', err);
         setLoading(false);
@@ -203,15 +206,29 @@ function Dashboard() {
                 );
 
                 // ✅ Save to backend
-                fetch('http://localhost:5050/api/save-status', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    id: pendingItemId,
-                    status: pendingStatus,
-                    pickedBy: pickedByName,
-                  }),
-                }).catch(err => console.error("Error saving status:", err));
+                const fullStudent = submissions.find(s => s.id === pendingItemId);
+
+                  fetch('http://localhost:5050/api/save-status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      id: pendingItemId,
+                      status: pendingStatus,
+                      pickedBy: pickedByName,
+                      name: fullStudent?.name || "",
+                      email: fullStudent?.email || "",
+                      phone: fullStudent?.phone || "",
+                      industry: fullStudent?.industry || "",
+                      academicStanding: fullStudent?.academicStanding || "",
+                      lookingFor: fullStudent?.lookingFor || "",
+                      resume: fullStudent?.resume || "",
+                      howTheyHeard: fullStudent?.howTheyHeard || "",
+                      availability: fullStudent?.availability || "",
+                      timeline: fullStudent?.timeline || "",
+                      otherInfo: fullStudent?.otherInfo || "",
+                      submitted: fullStudent?.submitted || ""
+                    }),
+                  }).catch(err => console.error("Error saving status:", err));
 
                 setShowNameModal(false);
                 setAdvisorNameInput('');

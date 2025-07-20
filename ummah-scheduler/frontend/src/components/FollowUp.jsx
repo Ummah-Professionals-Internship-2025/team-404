@@ -33,13 +33,32 @@ export default function FollowUp() {
               <div key={item.id} className="submission-card" onClick={() => setSelected(item)}>
                 <div className="card-content">
                   <div className="student-info">
-                    <p className="student-name">{item.name}</p>
-                    <p className="student-industry">{item.industry}</p>
-                    <p className="student-email">{item.email}</p>
-                    <div className="availability">
-                      <p><strong>Availability:</strong> {item.availability}</p>
-                    </div>
-                  </div>
+  <p className="student-name">{item.name}</p>
+  <p className="student-industry">{item.industry}</p>
+  <p className="student-email">{item.email}</p>
+  <div className="availability">
+    <p><strong>Availability:</strong> {item.availability}</p>
+  </div>
+  <div style={{ marginTop: '8px' }}>
+    <span
+      style={{
+        backgroundColor: '#dcfce7',
+        color: '#15803d',
+        padding: '4px 8px',
+        borderRadius: '8px',
+        fontWeight: '500'
+      }}
+    >
+      Done
+    </span>
+    {item.pickedBy && (
+      <div style={{ fontSize: '0.8rem', color: '#555', marginTop: '4px' }}>
+        Picked by: {item.pickedBy}
+      </div>
+    )}
+  </div>
+</div>
+
                 </div>
               </div>
             ))}
