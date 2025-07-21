@@ -19,6 +19,10 @@ function Dashboard() {
   const [selected, setSelected] = useState(null);
   const navigate = useNavigate();
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedProfession, setSelectedProfession] = useState('');
+
+
   useEffect(() => {
     fetch('http://localhost:5050/api/submissions')
       .then((res) => res.json())
@@ -47,6 +51,27 @@ function Dashboard() {
   <Sidebar />
 </header>
 
+  <div className="filter-controls">
+    <input
+      type="text"
+      placeholder="Search by name or profession..."
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      className="search-bar"
+    />
+    <select
+      value={selectedProfession}
+      onChange={(e) => setSelectedProfession(e.target.value)}
+      className="dropdown-filter"
+    >
+      <option value="">All Professions</option>
+      {[...new Set(submissions.map((s) => s.industry).filter(Boolean))].map((industry) => (
+        <option key={industry} value={industry}>
+          {industry}
+        </option>
+      ))}
+    </select>
+  </div>
 
 
       <div className="content-container">
@@ -56,7 +81,15 @@ function Dashboard() {
           <p className="status-text">No submissions found.</p>
         ) : (
           <div className="submissions-grid">
-            {submissions.map((item) => (
+            {submissions
+              .filter(item =>
+                (!searchQuery ||
+                  item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  item.industry.toLowerCase().includes(searchQuery.toLowerCase()))
+                && (!selectedProfession || item.industry === selectedProfession)
+              )
+              .map((item) => (
+
               <div
                 key={item.id}
                 className="submission-card"
