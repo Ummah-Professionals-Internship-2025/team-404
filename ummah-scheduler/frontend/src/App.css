@@ -232,3 +232,75 @@ button:hover {
   color: #555;
   margin-top: 4px;
 }
+
+.filter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 0 10px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.search-bar {
+  flex: 1;
+  min-width: 250px;
+  padding: 10px 16px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  outline: none;
+  background-color: #fff;
+  transition: border-color 0.3s ease;
+}
+
+.search-bar:focus {
+  border-color: #4ad9e4;
+  box-shadow: 0 0 0 3px rgba(74, 217, 228, 0.2);
+}
+
+.dropdown-filter {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  background-color: #ffffff;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  appearance: none;
+
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%234ad9e4' height='16' viewBox='0 0 24 24' width='16' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 14px;
+  padding-right: 44px;
+}
+
+.dropdown-filter:hover {
+  border-color: #4ad9e4;
+  box-shadow: 0 0 0 3px rgba(74, 217, 228, 0.12);
+}
+
+.dropdown-filter:focus {
+  border-color: #4ad9e4;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(74, 217, 228, 0.3);
+}
+
+
+
+@media (max-width: 600px) {
+  .filter-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-bar,
+  .dropdown-filter {
+    width: 100%;
+  }
+}
+
