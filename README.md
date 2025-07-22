@@ -34,6 +34,8 @@ python app.py
 
 ```bash
 cd frontend
+nvm install 20
+nvm use 20
 npm install
 npm run dev
 ```
