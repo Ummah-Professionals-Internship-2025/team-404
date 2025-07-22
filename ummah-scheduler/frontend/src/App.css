@@ -309,17 +309,6 @@ button:hover {
   border: 1px solid #ccc;
 }
 
-.confirm-btn {
-  background-color: #4ad9e4;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-
 @media (max-width: 600px) {
   .filter-controls {
     flex-direction: column;
