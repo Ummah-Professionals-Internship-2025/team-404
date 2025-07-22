@@ -36,12 +36,12 @@ print("DISCORD_LAW_WEBHOOK:", DISCORD_LAW_WEBHOOK)
 
 MONDAY_API = "https://api.monday.com/v2"
 
-def get_latest_items(limit: int = 100): #changed from 5 to 100, hard coded limit on line 44 anyway cuz {limit} wasn't working - idrk how to fix this lmao
+def get_latest_items(limit: int = 100): #changed from 5 to 100
     """graphql query to pull most-recent items"""
     query = f"""
     query {{
       boards(ids: [{MONDAY_BOARD_ID}]) {{
-        items_page(limit: 100) {{
+        items_page(limit: {limit}) {{
           items {{
             id
             name
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     print("Polling Monday.com…  Ctrl-C to stop.")
     try:
         while True:
-            for itm in get_latest_items(limit=5):
+            for itm in get_latest_items(): #was get_latest_items(limit=5)
                 if itm["id"] not in SEEN_IDS:
                     post_to_discord(itm)
                     SEEN_IDS.add(itm["id"])

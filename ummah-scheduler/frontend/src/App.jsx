@@ -45,6 +45,32 @@ function Dashboard() {
       });
   }, []);
 
+  //Escape modal by clicking escape instead of having to click X or outside
+  useEffect(() => {
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape') {
+        if (showNameModal) {
+          setShowNameModal(false);
+          setAdvisorNameInput('');
+          setPendingItemId(null);
+          setPendingStatus('');
+        } else if (selected) {
+          setSelected(null);
+        }
+      }
+    };
+
+    //event listener when either modal is open
+    if (selected || showNameModal) {
+      document.addEventListener('keydown', handleEscapeKey);
+    }
+
+    //remove event listener
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [selected, showNameModal]); 
+
   return (
     <div className="app-container">
       <header className="app-header">
