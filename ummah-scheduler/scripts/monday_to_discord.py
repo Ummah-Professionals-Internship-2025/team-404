@@ -14,21 +14,34 @@ load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / '.env')
 # Variables
 MONDAY_API_KEY       = os.getenv("MONDAY_API_KEY")
 MONDAY_BOARD_ID      = os.getenv("MONDAY_BOARD_ID")
-DISCORD_WEBHOOK_URL  = os.getenv("DISCORD_WEBHOOK_URL")
+
+DISCORD_GENERAL_WEBHOOK     = os.getenv("DISCORD_GENERAL_WEBHOOK") 
+DISCORD_BUSINESS_WEBHOOK    = os.getenv("DISCORD_BUSINESS_WEBHOOK")
+DISCORD_EDUCATION_WEBHOOK   = os.getenv("DISCORD_EDUCATION_WEBHOOK")
+DISCORD_ENGINEERING_WEBHOOK = os.getenv("DISCORD_ENGINEERING_WEBHOOK")
+DISCORD_FINANCE_WEBHOOK     = os.getenv("DISCORD_FINANCE_WEBHOOK")
+DISCORD_IT_WEBHOOK          = os.getenv("DISCORD_IT_WEBHOOK")
+DISCORD_LAW_WEBHOOK         = os.getenv("DISCORD_LAW_WEBHOOK")
 
 # Debug print to confirm .env loading
 print("MONDAY_API_KEY:", MONDAY_API_KEY)
 print("MONDAY_BOARD_ID:", MONDAY_BOARD_ID)
-print("DISCORD_WEBHOOK_URL:", DISCORD_WEBHOOK_URL)
+print("DISCORD_GENERAL_WEBHOOK:", DISCORD_GENERAL_WEBHOOK)
+print("DISCORD_BUSINESS_WEBHOOK:", DISCORD_BUSINESS_WEBHOOK)
+print("DISCORD_EDUCATION_WEBHOOK:", DISCORD_EDUCATION_WEBHOOK)
+print("DISCORD_ENGINEERING_WEBHOOK:", DISCORD_ENGINEERING_WEBHOOK)
+print("DISCORD_FINANCE_WEBHOOK:", DISCORD_FINANCE_WEBHOOK)
+print("DISCORD_IT_WEBHOOK:", DISCORD_IT_WEBHOOK )
+print("DISCORD_LAW_WEBHOOK:", DISCORD_LAW_WEBHOOK)
 
 MONDAY_API = "https://api.monday.com/v2"
 
-def get_latest_items(limit: int = 5):
+def get_latest_items(limit: int = 100): #changed from 5 to 100, hard coded limit on line 44 anyway cuz {limit} wasn't working - idrk how to fix this lmao
     """graphql query to pull most-recent items"""
     query = f"""
     query {{
       boards(ids: [{MONDAY_BOARD_ID}]) {{
-        items_page(limit: {limit}) {{
+        items_page(limit: 100) {{
           items {{
             id
             name
@@ -63,36 +76,23 @@ def get_latest_items(limit: int = 5):
     resp.raise_for_status()
     return resp.json()["data"]["boards"][0]["items_page"]["items"]
 
-
-
+#changed so that discord submissions send to respective channels. e.g. #business, #education, etc. 
 def post_to_discord(item):
     print("\n--- Raw Column Values ---")
     for col in item["column_values"]:
         print(f"id: {col['id']} | text: {col.get('text')}")
 
-    # Use plain text for everything, including resume
     columns = {c["id"]: c.get("text", "") for c in item["column_values"]}
 
+    industry_str = columns.get('dropdown_mksazheg', 'N/A')
+    industries = [i.strip() for i in industry_str.split(',')] if industry_str and industry_str != 'N/A' else []
+
     content = (
-        f"**********************************************************\n"
         f"** New Career-Prep Submission**\n"
-        f"**********************************************************\n"
-        f"**Industry:** {columns.get('dropdown_mksazheg', 'N/A')}\n"
-        f"**********************************************************\n"
         f"**Name:** {item['name']}\n"
         f"**Email:** {columns.get('email_mksanes7', 'N/A')}\n"
         f"**Phone:** {columns.get('phone_mksam3k4', 'N/A')}\n"
-        f"**Academic Standing:** {columns.get('dropdown_mksank0m', 'N/A')}\n"
-        f"**Looking For:** {columns.get('dropdown_mksa2xnv', 'N/A')}\n"
-        f"**Resume:** {columns.get('files_1', 'N/A')}\n"
-        f"**How They Heard:** {columns.get('dropdown_mksatymx', 'N/A')}\n"
-        f"**Weekly Availability:** {columns.get('dropdown_mksddh69', 'N/A')}\n"
-        f"**Preferred Times:** {columns.get('project_timeline', 'N/A')}\n"
-        f"**Other Info:** {columns.get('text9', 'N/A')}\n"
-        f"**Submitted:** {columns.get('last_updated', item['created_at'])}\n"
-        f"**Email:** {columns.get('email_mksanes7', 'N/A')}\n"
-        f"**Phone:** {columns.get('phone_mksam3k4', 'N/A')}\n"
-        f"**Industry:** {columns.get('dropdown_mksazheg', 'N/A')}\n"
+        f"**Industry:** {industry_str}\n"
         f"**Academic Standing:** {columns.get('dropdown_mksank0m', 'N/A')}\n"
         f"**Looking For:** {columns.get('dropdown_mksa2xnv', 'N/A')}\n"
         f"**Resume:** {columns.get('files_1', 'N/A')}\n"
@@ -102,14 +102,36 @@ def post_to_discord(item):
         f"**Other Info:** {columns.get('text9', 'N/A')}\n"
         f"**Submitted:** {columns.get('last_updated', item['created_at'])}\n"
         f"[ View in Scheduler Tool](https://our-scheduler-url.com/goes/here)\n"
-        f"**********************************************************\n"
-        f"**********************************************************\n"
     )
 
+    posted_to_industry = False
 
-    r = requests.post(DISCORD_WEBHOOK_URL, json={"content": content})
-    r.raise_for_status()
+    for industry in industries:
+          url = None
+          if "business" in industry.lower():
+              url = DISCORD_BUSINESS_WEBHOOK
+          elif "education" in industry.lower():
+              url = DISCORD_EDUCATION_WEBHOOK
+          elif "engineering" in industry.lower():
+              url = DISCORD_ENGINEERING_WEBHOOK
+          elif "finance" in industry.lower():
+              url = DISCORD_FINANCE_WEBHOOK
+          elif "information technology" in industry.lower():
+              url = DISCORD_IT_WEBHOOK
+          elif "law" in industry.lower():
+              url = DISCORD_LAW_WEBHOOK
 
+          if url:
+              print(f"Posting to {industry} channel via {url}")
+              r = requests.post(url, json={"content": content})
+              r.raise_for_status()
+              posted_to_industry = True
+
+          # If no matching industry webhook was used, post to general (this is just a temporary measure, we'll have every channel correspond to an industry option)
+    if not posted_to_industry:
+              print(f"No matching industry found. Posting to general channel.")
+              r = requests.post(DISCORD_GENERAL_WEBHOOK, json={"content": content})
+              r.raise_for_status()
 
 
 if __name__ == "__main__":
@@ -121,7 +143,7 @@ if __name__ == "__main__":
                 if itm["id"] not in SEEN_IDS:
                     post_to_discord(itm)
                     SEEN_IDS.add(itm["id"])
-                    print("→ sent item", itm["id"])
+                    print("sent item", itm["id"])
             time.sleep(300)  # wait 5 mins before checking again
     except KeyboardInterrupt:
         print("Stopped.")
