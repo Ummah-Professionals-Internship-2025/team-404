@@ -117,6 +117,24 @@ export default function FollowUp() {
             <p><strong>Preferred Times:</strong> {selected.timeline}</p>
             <p><strong>Other Info:</strong> {selected.otherInfo}</p>
             <p><strong>Submitted:</strong> {selected.submitted}</p>
+
+            <div className="modal-buttons">
+            <button
+            className="propose-btn"
+            onClick={() => {
+                sessionStorage.setItem("studentId", selected.id);
+                navigate(`/followup-schedule${selected.id}`);
+            }}
+            >
+            Propose Follow-Up
+            </button>
+
+
+            <button className="message-btn" onClick={() => alert("Coming soon!")}>
+                Send a Message
+            </button>
+            </div>
+
           </div>
         </div>
       )}

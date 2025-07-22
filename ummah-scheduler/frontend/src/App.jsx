@@ -7,6 +7,8 @@ import ScheduleConfirm from "./components/ScheduleConfirm";
 import logo from './assets/white-horizontal.png'; 
 import FollowUp from "./components/FollowUp";
 import Sidebar from './components/Sidebar';
+import FollowUpScheduler from "./components/FollowUpScheduler";
+
 
 function Dashboard() {
   const [showNameModal, setShowNameModal] = useState(false);
@@ -312,6 +314,7 @@ export default function App() {
       <Route path="/schedule/:id" element={<SchedulePage />} />
       <Route path="/schedule-confirm" element={<ScheduleConfirm />} />
       <Route path="/followup" element={<FollowUp />} />
+      <Route path="/followup-schedule/:id" element={<FollowUpScheduler />} />
     </Routes>
     </>
   );
