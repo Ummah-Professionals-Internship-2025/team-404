@@ -74,11 +74,14 @@ def post_to_discord(item):
     columns = {c["id"]: c.get("text", "") for c in item["column_values"]}
 
     content = (
+        f"**********************************************************\n"
         f"** New Career-Prep Submission**\n"
+        f"**********************************************************\n"
+        f"**Industry:** {columns.get('dropdown_mksazheg', 'N/A')}\n"
+        f"**********************************************************\n"
         f"**Name:** {item['name']}\n"
         f"**Email:** {columns.get('email_mksanes7', 'N/A')}\n"
         f"**Phone:** {columns.get('phone_mksam3k4', 'N/A')}\n"
-        f"**Industry:** {columns.get('dropdown_mksazheg', 'N/A')}\n"
         f"**Academic Standing:** {columns.get('dropdown_mksank0m', 'N/A')}\n"
         f"**Looking For:** {columns.get('dropdown_mksa2xnv', 'N/A')}\n"
         f"**Resume:** {columns.get('files_1', 'N/A')}\n"
@@ -99,6 +102,8 @@ def post_to_discord(item):
         f"**Other Info:** {columns.get('text9', 'N/A')}\n"
         f"**Submitted:** {columns.get('last_updated', item['created_at'])}\n"
         f"[ View in Scheduler Tool](https://our-scheduler-url.com/goes/here)\n"
+        f"**********************************************************\n"
+        f"**********************************************************\n"
     )
 
 
