@@ -6,10 +6,12 @@ from routes.auth import auth_bp
 from routes.schedule import schedule
 from routes.followup import followup_bp
 from app_config import FLASK_SECRET_KEY
+from db import init_db, seed_admin
+from routes.admin import admin_bp
 
 app = Flask(__name__)
 app.secret_key = FLASK_SECRET_KEY
-
+app.register_blueprint(admin_bp)
 # ✅ Updated CORS config — full support for frontend from localhost:5173
 CORS(app, supports_credentials=True, resources={
     r"/api/*": {
@@ -29,11 +31,14 @@ app.register_blueprint(followup_bp, url_prefix='/api')
 def index():
     return "Backend is running"
 
+
 if __name__ == "__main__":
+    init_db()
+    seed_admin()
+
     print("\n📍 Registered routes:")
     for rule in app.url_map.iter_rules():
         print(f"{rule.endpoint:30s} {rule.methods} {rule}")
-    print()  # spacing
+    print()
 
     app.run(debug=True, port=5050)
-

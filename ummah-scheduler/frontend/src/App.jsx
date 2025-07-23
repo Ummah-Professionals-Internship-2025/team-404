@@ -8,6 +8,8 @@ import logo from './assets/white-horizontal.png';
 import FollowUp from "./components/FollowUp";
 import Sidebar from './components/Sidebar';
 import FollowUpScheduler from "./components/FollowUpScheduler";
+import AdminLogin from './components/AdminLogin';
+import AdminDashboard from './components/AdminDashboard';
 
 
 function Dashboard() {
@@ -334,14 +336,16 @@ function Dashboard() {
 export default function App() {
   return (
     <>
-    <Sidebar />
-    <Routes>
-      <Route path="/" element={<Dashboard />} />
-      <Route path="/schedule/:id" element={<SchedulePage />} />
-      <Route path="/schedule-confirm" element={<ScheduleConfirm />} />
-      <Route path="/followup" element={<FollowUp />} />
-      <Route path="/followup-schedule/:id" element={<FollowUpScheduler />} />
-    </Routes>
+      <Sidebar />
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/schedule/:id" element={<SchedulePage />} />
+        <Route path="/schedule-confirm" element={<ScheduleConfirm />} />
+        <Route path="/followup" element={<FollowUp />} />
+        <Route path="/followup-schedule/:id" element={<FollowUpScheduler />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+      </Routes>
     </>
   );
 }
