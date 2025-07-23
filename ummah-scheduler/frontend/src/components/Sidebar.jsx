@@ -18,7 +18,7 @@ export default function Sidebar() {
       <div className={`sidebar ${open ? 'open' : ''}`}>
         <button onClick={() => { setOpen(false); navigate('/'); }}>Dashboard</button>
         <button onClick={() => { setOpen(false); navigate('/followup'); }}>Follow-Up</button>
-        <button disabled style={{ opacity: 0.5, cursor: 'not-allowed' }}>Search for Submission</button>
+        <button onClick={() => { setOpen(false); navigate('/admin-login'); }}>Admin Login</button>
       </div>
     </div>
   );

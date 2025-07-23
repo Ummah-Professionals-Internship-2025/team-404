@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import CalendarPreview from './CalendarPreview';
-import './SchedulePage.css'; // NEW IMPORT
+import './SchedulePage.css';
 
 export default function SchedulePage() {
   const { id } = useParams();
@@ -34,6 +34,32 @@ export default function SchedulePage() {
     sessionStorage.setItem("studentId", id);
     sessionStorage.setItem("meetingTime", selectedTime);
 
+    // ✅ Save status and pickedBy info
+    if (student) {
+      fetch("http://localhost:5050/api/save-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: student.id,
+          status: "In Progress",
+          pickedBy: mentorEmail,
+          name: student.name,
+          email: student.email,
+          phone: student.phone,
+          industry: student.industry,
+          academicStanding: student.academicStanding,
+          lookingFor: student.lookingFor,
+          resume: student.resume,
+          howTheyHeard: student.howTheyHeard,
+          availability: student.availability,
+          timeline: student.timeline,
+          otherInfo: student.otherInfo,
+          submitted: student.submitted
+        })
+      });
+    }
+
+    // Continue to Google auth or confirmation
     if (!mentorEmail) {
       window.location.href = "http://localhost:5050/auth/login";
     } else {
