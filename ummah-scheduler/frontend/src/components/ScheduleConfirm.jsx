@@ -8,9 +8,16 @@ export default function ScheduleConfirm() {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const mentorEmail = params.get("email");
+    const mentorEmail = params.get("email") || sessionStorage.getItem("mentorEmail");
     const studentId = sessionStorage.getItem("studentId");
     const meetingTime = sessionStorage.getItem("meetingTime");
+
+    console.log("Confirm page loaded with:", {
+      studentId,
+      mentorEmail,
+      meetingTime
+    });
+
 
     if (!mentorEmail || !studentId || !meetingTime) {
       alert("Missing meeting info.");
