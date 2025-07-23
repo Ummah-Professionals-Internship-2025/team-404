@@ -4,6 +4,7 @@ import '../App.css';
 import './SchedulePage.css';
 import logo from '../assets/white-horizontal.png';
 import Sidebar from './Sidebar';
+import { useNavigate } from 'react-router-dom';
 
 export default function FollowUp() {
   const [doneSubmissions, setDoneSubmissions] = useState([]);
@@ -11,6 +12,8 @@ export default function FollowUp() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProfession, setSelectedProfession] = useState('');
+  const navigate = useNavigate();
+
 
 
   useEffect(() => {
@@ -123,7 +126,7 @@ export default function FollowUp() {
             className="propose-btn"
             onClick={() => {
                 sessionStorage.setItem("studentId", selected.id);
-                navigate(`/followup-schedule${selected.id}`);
+                navigate(`/followup-schedule/${selected.id}`);
             }}
             >
             Propose Follow-Up
