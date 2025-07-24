@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import CalendarPreview from './CalendarPreview';
 import './SchedulePage.css';
+import Header from './Header';
 
 export default function SchedulePage() {
   const { id } = useParams();
@@ -70,7 +71,7 @@ export default function SchedulePage() {
   if (!student) return <p className="text-center mt-10">Loading...</p>;
 
   return (
-    <div className="schedule-container">
+    <><Header /><div className="schedule-container">
       <div className="schedule-card">
         <h2 className="schedule-title">Propose a Meeting with {student.name}</h2>
 
@@ -82,8 +83,7 @@ export default function SchedulePage() {
           <CalendarPreview
             availability={student.availability}
             timeline={student.timeline}
-            onSelect={setSelectedTime}
-          />
+            onSelect={setSelectedTime} />
         </div>
 
         <p className="login-info">
@@ -102,6 +102,6 @@ export default function SchedulePage() {
           </p>
         )}
       </div>
-    </div>
+    </div></>
   );
 }
