@@ -10,37 +10,38 @@ export default function FollowUpScheduler() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(null);
-  const mentorEmail = sessionStorage.getItem("mentorEmail");
+  const [mentorEmail, setMentorEmail] = useState('');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const email = params.get("email");
     if (email) {
+      setMentorEmail(email);
       sessionStorage.setItem("mentorEmail", email);
     }
-    sessionStorage.setItem("fromFollowUp", "true");
   }, []);
 
-  const handleSchedule = () => {
-    if (!mentorEmail) {
-      alert("Please sign in to your Google Calendar account first.");
-      return;
-    }
-
+  const handleSendInvite = () => {
     if (!selectedDate) {
-      alert("Please select a date and time.");
+      alert("Please select a time.");
       return;
     }
 
-    sessionStorage.setItem("meetingTime", selectedDate.toISOString());
     sessionStorage.setItem("studentId", id);
-    navigate(`/schedule-confirm?email=${encodeURIComponent(mentorEmail)}`);
+    sessionStorage.setItem("meetingTime", selectedDate.toISOString());
+    sessionStorage.setItem("fromFollowUp", "true");
+
+    if (!mentorEmail) {
+      // ⬅️ This redirects to Google login, just like Dashboard
+      window.location.href = "http://localhost:5050/auth/login";
+    } else {
+      window.location.href = `http://localhost:5173/schedule-confirm?email=${mentorEmail}`;
+    }
   };
 
   return (
-  <>
-    <Header />
-    <div className="page-wrapper">
+    <>
+      <Header />
       <div className="schedule-container">
         <div className="schedule-card">
           <h2 className="schedule-title">Propose Follow-Up Meeting</h2>
@@ -67,7 +68,7 @@ export default function FollowUpScheduler() {
               : <>You will be prompted to sign in with Google before sending.</>}
           </p>
 
-          <button onClick={handleSchedule} className="send-invite-btn">
+          <button onClick={handleSendInvite} className="send-invite-btn">
             Send Invite
           </button>
 
@@ -78,8 +79,6 @@ export default function FollowUpScheduler() {
           )}
         </div>
       </div>
-    </div>
-  </>
-);
-
+    </>
+  );
 }
