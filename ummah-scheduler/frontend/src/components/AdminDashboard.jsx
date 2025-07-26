@@ -47,7 +47,22 @@ export default function AdminDashboard() {
                     <p><strong>Picked By:</strong> {sub.pickedBy || 'N/A'}</p>
                   </div>
                   <div>
-                    <button className="propose-btn" onClick={() => alert("Feature coming soon")}>Message</button>
+                    <button
+                      className="propose-btn"
+                      onClick={() => {
+                        const recipient = encodeURIComponent(sub.email);
+                        const subject = encodeURIComponent("Follow-up on your Ummah Professionals mentorship");
+                        const body = encodeURIComponent(`Hi ${sub.name},\n\nJust checking in to see how your mentorship is going.\n\n- UP Team`);
+
+                        const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${recipient}&su=${subject}&body=${body}`;
+
+                        window.open(gmailUrl, '_blank');
+                      }}
+                    >
+                      Message
+                    </button>
+
+
                     <button className="cancel-btn" onClick={() => alert("Cancel coming soon")}>Cancel</button>
                   </div>
                 </div>
