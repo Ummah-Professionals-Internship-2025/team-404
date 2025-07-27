@@ -21,7 +21,6 @@ SCOPES = [
     "openid"
 ]
 
-
 @auth_bp.route("/auth/login")
 def login():
     flow = Flow.from_client_secrets_file(
@@ -30,7 +29,7 @@ def login():
         redirect_uri="http://localhost:5050/oauth2callback"
     )
     auth_url, _ = flow.authorization_url(prompt='consent', access_type='offline', include_granted_scopes='true')
-    session["flow"] = flow.credentials_to_dict() if hasattr(flow, "credentials_to_dict") else None
+    session["flow"] = None  # Not needed, but placeholder
     return redirect(auth_url)
 
 @auth_bp.route("/oauth2callback")
@@ -72,3 +71,45 @@ def credentials_to_dict(creds):
         "client_secret": creds.client_secret,
         "scopes": creds.scopes
     }
+
+# ✅ ADMIN LOGIN WITH GOOGLE
+@auth_bp.route("/auth/admin-login")
+def admin_google_login():
+    flow = Flow.from_client_secrets_file(
+        CLIENT_SECRETS_FILE,
+        scopes=SCOPES,
+        redirect_uri="http://localhost:5050/oauth2callback-admin"
+    )
+    auth_url, _ = flow.authorization_url(prompt='consent', access_type='offline', include_granted_scopes='true')
+
+    # Store flow config in session using explicit SCOPES (not flow.scopes)
+    session["admin_flow"] = {
+        "client_id": flow.client_config["client_id"],
+        "client_secret": flow.client_config["client_secret"],
+        "scopes": SCOPES,
+        "redirect_uri": "http://localhost:5050/oauth2callback-admin"
+    }
+    return redirect(auth_url)
+
+@auth_bp.route("/oauth2callback-admin")
+def admin_oauth2callback():
+    flow = Flow.from_client_secrets_file(
+        CLIENT_SECRETS_FILE,
+        scopes=SCOPES,
+        redirect_uri="http://localhost:5050/oauth2callback-admin"
+    )
+    flow.fetch_token(authorization_response=request.url)
+
+    credentials = flow.credentials
+    user_service = build("oauth2", "v2", credentials=credentials)
+    user_info = user_service.userinfo().get().execute()
+
+    admin_email = user_info.get("email")
+    allowed_email = os.getenv("ADMIN_GOOGLE_EMAIL")
+
+    if admin_email != allowed_email:
+        return "Unauthorized", 403
+
+    session["adminLoggedIn"] = True
+    session["adminEmail"] = admin_email
+    return redirect("http://localhost:5173/admin-dashboard?loggedIn=true")
