@@ -7,6 +7,16 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Check if redirected from Google OAuth with ?loggedIn=true
+    const params = new URLSearchParams(window.location.search);
+    const isFromLogin = params.get("loggedIn") === "true";
+
+    if (isFromLogin) {
+      sessionStorage.setItem("adminLoggedIn", "true");
+      // Clean up the URL so ?loggedIn=true doesn't stay in the bar
+      window.history.replaceState(null, "", "/admin-dashboard");
+    }
+
     const isLoggedIn = sessionStorage.getItem("adminLoggedIn");
     if (!isLoggedIn) {
       window.location.href = "/admin-login";
@@ -55,14 +65,11 @@ export default function AdminDashboard() {
                         const body = encodeURIComponent(`Hi ${sub.name},\n\nJust checking in to see how your mentorship is going.\n\n- UP Team`);
 
                         const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${recipient}&su=${subject}&body=${body}`;
-
                         window.open(gmailUrl, '_blank');
                       }}
                     >
                       Message
                     </button>
-
-
                     <button className="cancel-btn" onClick={() => alert("Cancel coming soon")}>Cancel</button>
                   </div>
                 </div>
