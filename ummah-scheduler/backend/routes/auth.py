@@ -16,6 +16,7 @@ CLIENT_SECRETS_FILE = str(pathlib.Path(__file__).resolve().parent.parent / "cred
 SCOPES = [
     "https://www.googleapis.com/auth/calendar.events",
     "https://www.googleapis.com/auth/calendar",
+    "https://www.googleapis.com/auth/gmail.send",
     "https://www.googleapis.com/auth/userinfo.email",
     "https://www.googleapis.com/auth/userinfo.profile",
     "openid"
