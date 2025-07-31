@@ -40,6 +40,8 @@ def init_db():
             submitted TEXT,
             status TEXT,
             pickedBy TEXT,
+            pickedByEmail TEXT,
+            event_id TEXT,
             updated_at TEXT
         )
         """)
@@ -58,6 +60,7 @@ def get_done_submissions():
 
         items = get_latest_items(limit=50)
 
+        # ✅ Load from JSON first (to keep existing flow)
         if os.path.exists(SUBMISSIONS_FILE):
             with open(SUBMISSIONS_FILE, 'r') as f:
                 saved = json.load(f)
@@ -66,12 +69,14 @@ def get_done_submissions():
 
         saved_map = {entry["id"]: entry for entry in saved}
 
+        # Merge status and pickedBy from JSON to latest items
         for item in items:
             saved_entry = saved_map.get(item["id"])
             if saved_entry:
                 item["status"] = saved_entry.get("status", "To Do")
                 item["pickedBy"] = saved_entry.get("pickedBy", "")
 
+        # Only show Done items in followup page
         done_items = [item for item in items if item.get("status") == "Done"]
         return jsonify(done_items), 200
 
@@ -106,7 +111,7 @@ def save_submission_status():
             "submitted": data.get("submitted", "")
         }
 
-        # ✅ Save to original JSON file
+        # ✅ Step 1: Keep writing to JSON (original behavior)
         if os.path.exists(SUBMISSIONS_FILE):
             with open(SUBMISSIONS_FILE, 'r') as f:
                 submissions = json.load(f)
@@ -135,11 +140,7 @@ def save_submission_status():
         with open(SUBMISSIONS_FILE, 'w') as f:
             json.dump(submissions, f, indent=2)
 
-        # ✅ DEBUG: Show save intent
-        print("📝 Writing to SQLite DB:", DB_PATH.resolve())
-        print("🔢 Saving record for ID:", sub_id, "| Status:", new_status, "| Picked by:", picked_by)
-
-        # ✅ Save to SQLite
+        # ✅ Step 2: Also save/update SQLite for migration
         with sqlite3.connect(DB_PATH) as conn:
             c = conn.cursor()
             c.execute("""
@@ -183,37 +184,9 @@ def save_submission_status():
                 datetime.utcnow().isoformat()
             ))
             conn.commit()
-            print("✅ SQLite save complete.")
+            print(f"✅ SQLite updated for ID {sub_id}")
 
-        # ✅ Optional: Move to Monday "Done" group
-        if new_status == "Done":
-            import requests
-            from dotenv import load_dotenv
-
-            load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / '.env')
-            MONDAY_API_KEY = os.getenv("MONDAY_API_KEY")
-            COMPLETED_GROUP_ID = "new_group43041"
-
-            mutation = {
-                "query": f"""
-                    mutation {{
-                      move_item_to_group (item_id: {sub_id}, group_id: "{COMPLETED_GROUP_ID}") {{
-                        id
-                      }}
-                    }}
-                """
-            }
-
-            headers = {
-                "Authorization": MONDAY_API_KEY,
-                "Content-Type": "application/json"
-            }
-
-            resp = requests.post("https://api.monday.com/v2", headers=headers, json=mutation)
-            if resp.status_code != 200 or "errors" in resp.json():
-                print("❌ Failed to move item in Monday:", resp.text)
-
-        return jsonify({"message": "Status saved"}), 200
+        return jsonify({"message": "Status saved (JSON + SQLite)"}), 200
 
     except Exception as e:
         print("❌ Error in save_submission_status:")

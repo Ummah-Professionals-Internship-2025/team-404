@@ -19,7 +19,7 @@
   {
     "id": "9629780130",
     "status": "In Progress",
-    "pickedBy": "fadyeskandr100@gmail.com",
+    "pickedBy": "noor",
     "name": "John Snow",
     "email": "fadyeskandr7@gmail.com",
     "phone": "19195394582",
@@ -35,8 +35,8 @@
   },
   {
     "id": "9649708058",
-    "status": "In Progress",
-    "pickedBy": "saraabu740@gmail.com",
+    "status": "Done",
+    "pickedBy": "sara",
     "name": "sara abukhalaf",
     "email": "pagenoodle@gmail.com",
     "phone": "13367401257",
@@ -52,8 +52,8 @@
   },
   {
     "id": "9629442113",
-    "status": "In Progress",
-    "pickedBy": "fadyeskandr100@gmail.com",
+    "status": "Done",
+    "pickedBy": "fady",
     "name": "Fady Eskandr",
     "email": "micheallolenfeld@gmail.com",
     "phone": "19195394582",
@@ -66,5 +66,39 @@
     "timeline": "2025-07-20 - 2025-08-20",
     "otherInfo": "",
     "submitted": "2025-07-20 23:24:48 UTC"
+  },
+  {
+    "id": "9687416474",
+    "status": "In Progress",
+    "pickedBy": "saraabu740@gmail.com",
+    "name": "sara abukhalaf",
+    "email": "snabukhalaf@uncg.edu",
+    "phone": "13367401257",
+    "industry": "Engineering",
+    "academicStanding": "Senior",
+    "lookingFor": "General Career Advice",
+    "resume": "https://pagenoodles-team.monday.com/protected_static/30156694/resources/2315422777/use%20case%20flowchart.png",
+    "howTheyHeard": "LinkedIn",
+    "availability": "Monday morning, Monday evening, Tuesday evening",
+    "timeline": "2025-07-29 - 2025-08-04",
+    "otherInfo": "",
+    "submitted": "2025-07-28 17:01:48 UTC"
+  },
+  {
+    "id": "9717892772",
+    "status": "In Progress",
+    "pickedBy": "saraabu740@gmail.com",
+    "name": "mary",
+    "email": "pagenoodle@gmail.com",
+    "phone": "13367401257",
+    "industry": "Law",
+    "academicStanding": "Masters",
+    "lookingFor": "Resume Review",
+    "resume": "",
+    "howTheyHeard": "Word Of Mouth",
+    "availability": "Thursday evening",
+    "timeline": "2025-08-01 - 2025-09-01",
+    "otherInfo": "",
+    "submitted": "2025-07-31 18:28:10 UTC"
   }
 ]

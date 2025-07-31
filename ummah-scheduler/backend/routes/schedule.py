@@ -1,12 +1,17 @@
 # backend/routes/schedule.py
+# backend/routes/schedule.py
 from flask import Blueprint, request, jsonify
 from datetime import datetime, timedelta
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from routes.auth import mentor_tokens
 from app_config import GOOGLE_CALENDAR_TIMEZONE
+import sqlite3, os
+from datetime import datetime as dt
 
 schedule = Blueprint('schedule', __name__)
+
+DB_PATH = os.path.join(os.path.dirname(__file__), "..", "admin_data.db")
 
 # ✅ Preflight handler to resolve CORS properly
 @schedule.route('/api/schedule-meeting', methods=['OPTIONS'])
@@ -22,6 +27,7 @@ def schedule_meeting():
     student_email = data.get("studentEmail")
     mentor_email = data.get("mentorEmail")
     meeting_time = data.get("time")  # ISO 8601 string
+    student_id = data.get("id")      # Student submission ID for SQLite
 
     if not student_email or not mentor_email or not meeting_time:
         return jsonify({"error": "Missing required fields"}), 400
@@ -34,7 +40,6 @@ def schedule_meeting():
         creds = Credentials(**token_data)
         calendar_service = build("calendar", "v3", credentials=creds)
 
-        #start = datetime.fromisoformat(meeting_time)
         start = datetime.fromisoformat(meeting_time.replace("Z", "+00:00"))
         end = start + timedelta(minutes=30)
 
@@ -68,7 +73,36 @@ def schedule_meeting():
             sendUpdates='all'
         ).execute()
 
-        return jsonify({"message": "Invite sent", "eventLink": created_event.get("htmlLink")})
+        event_id = created_event.get("id")
+        event_link = created_event.get("htmlLink")
+
+        # ✅ Update SQLite with event_id, pickedByEmail, status
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO admin_submissions (id, email, status, pickedByEmail, event_id, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(id) DO UPDATE SET
+                    status = excluded.status,
+                    pickedByEmail = excluded.pickedByEmail,
+                    event_id = excluded.event_id,
+                    updated_at = excluded.updated_at
+            """, (
+                student_id,
+                student_email,
+                "In Progress",
+                mentor_email,
+                event_id,
+                dt.utcnow().isoformat()
+            ))
+            conn.commit()
+            conn.close()
+            print(f"✅ SQLite updated with event_id for {student_email}")
+        except Exception as db_err:
+            print("⚠️ Warning: Could not update SQLite with event info:", db_err)
+
+        return jsonify({"message": "Invite sent", "eventLink": event_link})
 
     except Exception as e:
         print("Calendar error:", e)

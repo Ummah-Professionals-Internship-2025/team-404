@@ -1,29 +1,42 @@
+# db_schema.py
+
+
 import sqlite3
+import os
 
-conn = sqlite3.connect("admin_data.db")
-cursor = conn.cursor()
+DB_PATH = os.path.join(os.path.dirname(__file__), "admin_data.db")
 
-# Store meeting statuses and who picked them
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS admin_submissions (
+conn = sqlite3.connect(DB_PATH)
+cur = conn.cursor()
+
+
+cur.execute("DROP TABLE IF EXISTS admin_submissions")
+
+
+cur.execute("""
+CREATE TABLE admin_submissions (
     id TEXT PRIMARY KEY,
     name TEXT,
     email TEXT,
-    availability TEXT,
+    phone TEXT,
     industry TEXT,
+    academicStanding TEXT,
+    lookingFor TEXT,
+    resume TEXT,
+    howTheyHeard TEXT,
+    availability TEXT,
+    timeline TEXT,
+    otherInfo TEXT,
+    submitted TEXT,
     status TEXT,
-    picked_by TEXT,
-    updated_at TEXT
+    pickedBy TEXT,
+    updated_at TEXT,
+    pickedByEmail TEXT,
+    event_id TEXT
 )
-''')
-
-# Optional: Admin login tracking
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS admin_logins (
-    email TEXT,
-    timestamp TEXT
-)
-''')
+""")
 
 conn.commit()
 conn.close()
+
+print(f"✅ SQLite DB initialized at {DB_PATH} with admin_submissions table.")
