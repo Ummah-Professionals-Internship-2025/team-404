@@ -22,6 +22,9 @@ SCOPES = [
     "openid"
 ]
 
+# ----------------------------
+# MENTOR LOGIN (SCHEDULING)
+# ----------------------------
 @auth_bp.route("/auth/login")
 def login():
     flow = Flow.from_client_secrets_file(
@@ -30,7 +33,7 @@ def login():
         redirect_uri="http://localhost:5050/oauth2callback"
     )
     auth_url, _ = flow.authorization_url(prompt='consent', access_type='offline', include_granted_scopes='true')
-    session["flow"] = None  # Not needed, but placeholder
+    session["flow"] = "schedule"
     return redirect(auth_url)
 
 @auth_bp.route("/oauth2callback")
@@ -52,8 +55,35 @@ def oauth2callback():
 
     # Store the mentor’s credentials
     mentor_tokens[mentor_email] = credentials_to_dict(credentials)
+
+    # Check flow type
+    flow_type = session.get("flow")
+    if flow_type == "message":
+        # Message-only login → return to Follow-Up page
+        return redirect(f"http://localhost:5173/followup?loggedIn=true&email={mentor_email}")
+
+    # Default: scheduling flow → ScheduleConfirm
     return redirect(f"http://localhost:5173/schedule-confirm?email={mentor_email}")
 
+
+# ----------------------------
+# NEW: MENTOR LOGIN FOR MESSAGING
+# ----------------------------
+@auth_bp.route("/auth/login-message")
+def login_message():
+    flow = Flow.from_client_secrets_file(
+        CLIENT_SECRETS_FILE,
+        scopes=SCOPES,
+        redirect_uri="http://localhost:5050/oauth2callback"
+    )
+    auth_url, _ = flow.authorization_url(prompt='consent', access_type='offline', include_granted_scopes='true')
+    session["flow"] = "message"
+    return redirect(auth_url)
+
+
+# ----------------------------
+# TOKEN ENDPOINT
+# ----------------------------
 @auth_bp.route("/auth/token")
 def get_token():
     email = request.args.get("email")
@@ -73,7 +103,9 @@ def credentials_to_dict(creds):
         "scopes": creds.scopes
     }
 
-# ✅ ADMIN LOGIN WITH GOOGLE
+# ----------------------------
+# ADMIN LOGIN WITH GOOGLE
+# ----------------------------
 @auth_bp.route("/auth/admin-login")
 def admin_google_login():
     flow = Flow.from_client_secrets_file(
@@ -83,7 +115,6 @@ def admin_google_login():
     )
     auth_url, _ = flow.authorization_url(prompt='consent', access_type='offline', include_granted_scopes='true')
 
-    # Store flow config in session using explicit SCOPES (not flow.scopes)
     session["admin_flow"] = {
         "client_id": flow.client_config["client_id"],
         "client_secret": flow.client_config["client_secret"],

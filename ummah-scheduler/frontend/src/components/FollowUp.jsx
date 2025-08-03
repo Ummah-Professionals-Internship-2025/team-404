@@ -14,8 +14,7 @@ export default function FollowUp() {
   const [selectedProfession, setSelectedProfession] = useState('');
   const navigate = useNavigate();
 
-
-
+  // Fetch Done submissions
   useEffect(() => {
     fetch('http://localhost:5050/api/followup')
       .then(res => res.json())
@@ -23,9 +22,63 @@ export default function FollowUp() {
       .catch(err => console.error("Error fetching follow-ups:", err));
   }, []);
 
+  // Utility: Get webmail compose URL
+  function getWebmailUrl(email, subject, body) {
+    const encodedSubject = encodeURIComponent(subject);
+    const encodedBody = encodeURIComponent(body);
+    const domain = email.split('@')[1].toLowerCase();
+
+    if (domain.includes('gmail.com')) {
+      return `https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${encodedSubject}&body=${encodedBody}`;
+    }
+    if (domain.includes('outlook.com') || domain.includes('hotmail.com') || domain.includes('live.com')) {
+      return `https://outlook.office.com/mail/deeplink/compose?to=${email}&subject=${encodedSubject}&body=${encodedBody}`;
+    }
+    if (domain.includes('yahoo.com')) {
+      return `https://compose.mail.yahoo.com/?to=${email}&subject=${encodedSubject}&body=${encodedBody}`;
+    }
+
+    // Fallback to mailto
+    return `mailto:${email}?subject=${encodedSubject}&body=${encodedBody}`;
+  }
+
+  // Auto-resume after login for sending message
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const loggedIn = params.get("loggedIn") === "true";
+    const mentorEmail = params.get("email");
+
+    if (loggedIn && mentorEmail) {
+      sessionStorage.setItem("mentorEmail", mentorEmail);
+
+      const messageIntent = sessionStorage.getItem("messageIntent");
+      if (messageIntent === "true") {
+        const studentEmail = sessionStorage.getItem("messageStudentEmail");
+        const studentName = sessionStorage.getItem("messageStudentName");
+
+        sessionStorage.removeItem("messageIntent");
+        sessionStorage.removeItem("messageStudentEmail");
+        sessionStorage.removeItem("messageStudentName");
+
+        // Clean query params
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+
+        const subject = "Follow-Up on Your Ummah Professionals Mentorship";
+        const body = `Hi ${studentName},\n\n` +
+                     `I hope you're doing well! I'm following up to see if you'd like a second mentorship session.\n` +
+                     `If you're interested, let me know and we can schedule a new meeting.\n\n` +
+                     `- ${mentorEmail}`;
+
+        const url = getWebmailUrl(studentEmail, subject, body);
+        setTimeout(() => window.open(url, "_blank"), 400);
+      }
+    }
+  }, []);
+
   return (
     <div className="app-container">
-       <header className="app-header">
+      <header className="app-header">
         <img src={logo} alt="Ummah Professionals" className="logo" />
         <h1>Follow Up With a Student</h1>
         <Sidebar />
@@ -33,26 +86,23 @@ export default function FollowUp() {
 
       <div className="filter-controls">
         <input
-            type="text"
-            placeholder="Search by name or profession..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-bar"
+          type="text"
+          placeholder="Search by name or profession..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="search-bar"
         />
         <select
-            value={selectedProfession}
-            onChange={(e) => setSelectedProfession(e.target.value)}
-            className="dropdown-filter"
+          value={selectedProfession}
+          onChange={(e) => setSelectedProfession(e.target.value)}
+          className="dropdown-filter"
         >
-            <option value="">All Professions</option>
-            {[...new Set(doneSubmissions.map((s) => s.industry).filter(Boolean))].map((industry) => (
-            <option key={industry} value={industry}>
-                {industry}
-            </option>
-            ))}
+          <option value="">All Professions</option>
+          {[...new Set(doneSubmissions.map((s) => s.industry).filter(Boolean))].map((industry) => (
+            <option key={industry} value={industry}>{industry}</option>
+          ))}
         </select>
-        </div>
-
+      </div>
 
       <div className="content-container">
         {doneSubmissions.length === 0 ? (
@@ -60,46 +110,42 @@ export default function FollowUp() {
         ) : (
           <div className="submissions-grid">
             {doneSubmissions
-                .filter(item =>
-                    (!searchQuery ||
-                    item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    item.industry.toLowerCase().includes(searchQuery.toLowerCase()))
-                    && (!selectedProfession || item.industry === selectedProfession)
-                )
-                .map((item) => (
-
-              <div key={item.id} className="submission-card" onClick={() => setSelected(item)}>
-                <div className="card-content">
-                  <div className="student-info">
-  <p className="student-name">{item.name}</p>
-  <p className="student-industry">{item.industry}</p>
-  <p className="student-email">{item.email}</p>
-  <div className="availability">
-    <p><strong>Availability:</strong> {item.availability}</p>
-  </div>
-  <div style={{ marginTop: '8px' }}>
-    <span
-      style={{
-        backgroundColor: '#dcfce7',
-        color: '#15803d',
-        padding: '4px 8px',
-        borderRadius: '8px',
-        fontWeight: '500'
-      }}
-    >
-      Done
-    </span>
-    {item.pickedBy && (
-      <div style={{ fontSize: '0.8rem', color: '#555', marginTop: '4px' }}>
-        Picked by: {item.pickedBy}
-      </div>
-    )}
-  </div>
-</div>
-
+              .filter(item =>
+                (!searchQuery ||
+                  item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  item.industry.toLowerCase().includes(searchQuery.toLowerCase()))
+                && (!selectedProfession || item.industry === selectedProfession)
+              )
+              .map((item) => (
+                <div key={item.id} className="submission-card" onClick={() => setSelected(item)}>
+                  <div className="card-content">
+                    <div className="student-info">
+                      <p className="student-name">{item.name}</p>
+                      <p className="student-industry">{item.industry}</p>
+                      <p className="student-email">{item.email}</p>
+                      <div className="availability">
+                        <p><strong>Availability:</strong> {item.availability}</p>
+                      </div>
+                      <div style={{ marginTop: '8px' }}>
+                        <span style={{
+                          backgroundColor: '#dcfce7',
+                          color: '#15803d',
+                          padding: '4px 8px',
+                          borderRadius: '8px',
+                          fontWeight: '500'
+                        }}>
+                          Done
+                        </span>
+                        {item.pickedBy && (
+                          <div style={{ fontSize: '0.8rem', color: '#555', marginTop: '4px' }}>
+                            Picked by: {item.pickedBy}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         )}
       </div>
@@ -122,22 +168,44 @@ export default function FollowUp() {
             <p><strong>Submitted:</strong> {selected.submitted}</p>
 
             <div className="modal-buttons">
-            <button
-            className="propose-btn"
-            onClick={() => {
-                sessionStorage.setItem("studentId", selected.id);
-                navigate(`/followup-schedule/${selected.id}`);
-            }}
-            >
-            Propose Follow-Up
-            </button>
+              <button
+                className="propose-btn"
+                onClick={() => {
+                  sessionStorage.setItem("studentId", selected.id);
+                  navigate(`/followup-schedule/${selected.id}`);
+                }}
+              >
+                Propose Follow-Up
+              </button>
 
+              <button
+                className="message-btn"
+                onClick={() => {
+                  const mentorEmail = sessionStorage.getItem("mentorEmail");
+                  const studentEmail = selected.email;
+                  const studentName = selected.name;
 
-            <button className="message-btn" onClick={() => alert("Coming soon!")}>
+                  if (!mentorEmail) {
+                    sessionStorage.setItem("messageIntent", "true");
+                    sessionStorage.setItem("messageStudentEmail", studentEmail);
+                    sessionStorage.setItem("messageStudentName", studentName);
+                    window.location.href = "http://localhost:5050/auth/login-message";
+                    return;
+                  }
+
+                  const subject = "Follow-Up on Your Ummah Professionals Mentorship";
+                  const body = `Hi ${studentName},\n\n` +
+                               `I hope you're doing well! I'm following up to see if you'd like a second mentorship session.\n` +
+                               `If you're interested, let me know and we can schedule a new meeting.\n\n` +
+                               `- ${mentorEmail}`;
+
+                  const url = getWebmailUrl(studentEmail, subject, body);
+                  window.open(url, "_blank");
+                }}
+              >
                 Send a Message
-            </button>
+              </button>
             </div>
-
           </div>
         </div>
       )}
