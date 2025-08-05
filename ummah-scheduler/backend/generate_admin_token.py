@@ -17,7 +17,7 @@ def main():
 
     # ✅ Force refresh_token by requesting offline access and consent
     creds = flow.run_local_server(
-        port=5050,
+        port=8090,
         authorization_prompt_message='',
         success_message='✅ Authentication complete. You may close this tab.',
         open_browser=True,

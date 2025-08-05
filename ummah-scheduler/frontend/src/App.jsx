@@ -25,6 +25,8 @@ function Dashboard() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProfession, setSelectedProfession] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+
 
 
   useEffect(() => {
@@ -87,7 +89,7 @@ function Dashboard() {
       placeholder="Search by name or profession..."
       value={searchQuery}
       onChange={(e) => setSearchQuery(e.target.value)}
-      className="search-bar"
+      className="search-bar"   
     />
     <select
       value={selectedProfession}
@@ -101,6 +103,23 @@ function Dashboard() {
         </option>
       ))}
     </select>
+
+    <div className="status-filter-buttons my-4 flex gap-2">
+  {['All', 'To Do', 'In Progress', 'Canceled'].map((status) => (
+    <button
+      key={status}
+      onClick={() => setStatusFilter(status)}
+      className={`px-4 py-1 rounded-lg border text-sm ${
+        statusFilter === status
+          ? 'bg-blue-600 text-white border-blue-600'
+          : 'bg-white text-gray-700 border-gray-300'
+      }`}
+    >
+      {status}
+    </button>
+  ))}
+</div>
+
   </div>
 
 
@@ -117,7 +136,9 @@ function Dashboard() {
                   item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                   item.industry.toLowerCase().includes(searchQuery.toLowerCase()))
                 && (!selectedProfession || item.industry === selectedProfession)
+                && (statusFilter === 'All' || item.status === statusFilter)
               )
+
               .map((item) => (
 
               <div
