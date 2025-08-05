@@ -18,6 +18,21 @@ body {
   overflow: hidden;
 }
 
+.login-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 30%, rgba(59, 130, 246, 0.12), transparent 60%),
+              radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.06), transparent 60%);
+  animation: waveGloss 16s linear infinite;
+  z-index: 0;
+  filter: blur(80px);
+}
+
+
 @keyframes bgFlow {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -102,4 +117,16 @@ body {
 .google-icon {
   width: 20px;
   height: 20px;
+}
+
+@keyframes waveGloss {
+  0% {
+    transform: rotate(0deg) translate(0%, 0%);
+  }
+  50% {
+    transform: rotate(180deg) translate(10%, -10%);
+  }
+  100% {
+    transform: rotate(360deg) translate(0%, 0%);
+  }
 }
