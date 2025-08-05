@@ -1,5 +1,5 @@
 // src/App.jsx
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import SchedulePage from './components/SchedulePage';
 import './App.css';
@@ -10,6 +10,19 @@ import Sidebar from './components/Sidebar';
 import FollowUpScheduler from "./components/FollowUpScheduler";
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
+import Login from './components/Login';
+import LoginCallback from './components/LoginCallback';
+
+
+function RequireAuth({ children }) {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const email = sessionStorage.getItem("mentorEmail");
+    if (!email) navigate("/login");
+  }, [navigate]);
+
+  return children;
+}
 
 
 function Dashboard() {
@@ -26,6 +39,7 @@ function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProfession, setSelectedProfession] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  
 
 
 
@@ -355,18 +369,46 @@ function Dashboard() {
 }
 
 export default function App() {
+
+  const location = useLocation();
+  const hideSidebar = location.pathname === "/login";
+
   return (
     <>
-      <Sidebar />
+      {!hideSidebar && <Sidebar />}
       <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/schedule/:id" element={<SchedulePage />} />
-        <Route path="/schedule-confirm" element={<ScheduleConfirm />} />
-        <Route path="/followup" element={<FollowUp />} />
-        <Route path="/followup-schedule/:id" element={<FollowUpScheduler />} />
-        <Route path="/admin-login" element={<AdminLogin />} />
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
-      </Routes>
+   <Route path="/login" element={<Login />} />
+  <Route path="/login/callback" element={<LoginCallback />} />
+  <Route
+    path="/"
+    element={
+      <RequireAuth>
+        <Dashboard />
+      </RequireAuth>
+    }
+  />
+  <Route path="/schedule/:id" element={<SchedulePage />} />
+  <Route path="/schedule-confirm" element={<ScheduleConfirm />} />
+  <Route
+    path="/followup"
+    element={
+      <RequireAuth>
+        <FollowUp />
+      </RequireAuth>
+    }
+  />
+  <Route
+    path="/followup-schedule/:id"
+    element={
+      <RequireAuth>
+        <FollowUpScheduler />
+      </RequireAuth>
+    }
+  />
+  <Route path="/admin-login" element={<AdminLogin />} />
+  <Route path="/admin-dashboard" element={<AdminDashboard />} />
+</Routes>
+
     </>
   );
 }

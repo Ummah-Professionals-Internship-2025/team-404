@@ -23,18 +23,43 @@ SCOPES = [
 ]
 
 # ----------------------------
-# MENTOR LOGIN (SCHEDULING)
+# CLEAN LOGIN (DEFAULT)
 # ----------------------------
-@auth_bp.route("/auth/login")
-def login():
+
+@auth_bp.route("/auth/login-basic")
+def login_basic():
     flow = Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE,
         scopes=SCOPES,
         redirect_uri="http://localhost:5050/oauth2callback"
     )
-    auth_url, _ = flow.authorization_url(prompt='consent', access_type='offline', include_granted_scopes='true')
+    auth_url, _ = flow.authorization_url(
+        prompt='consent',
+        access_type='offline',
+        include_granted_scopes='true'
+    )
+    session["flow"] = "login"
+    return redirect(auth_url)
+
+# ----------------------------
+# MENTOR LOGIN FOR SCHEDULING (Propose Meeting)
+# ----------------------------
+@auth_bp.route("/auth/login")
+def login_schedule():
+    flow = Flow.from_client_secrets_file(
+        CLIENT_SECRETS_FILE,
+        scopes=SCOPES,
+        redirect_uri="http://localhost:5050/oauth2callback"
+    )
+    auth_url, _ = flow.authorization_url(
+        prompt='consent',
+        access_type='offline',
+        include_granted_scopes='true'
+    )
     session["flow"] = "schedule"
     return redirect(auth_url)
+
+
 
 @auth_bp.route("/oauth2callback")
 def oauth2callback():
@@ -53,17 +78,17 @@ def oauth2callback():
     if not mentor_email:
         return "Failed to get user email", 400
 
-    # Store the mentor’s credentials
     mentor_tokens[mentor_email] = credentials_to_dict(credentials)
 
-    # Check flow type
     flow_type = session.get("flow")
     if flow_type == "message":
-        # Message-only login → return to Follow-Up page
         return redirect(f"http://localhost:5173/followup?loggedIn=true&email={mentor_email}")
+    elif flow_type == "schedule":
+        return redirect(f"http://localhost:5173/schedule-confirm?email={mentor_email}")
+    else:
+        # default login
+        return redirect(f"http://localhost:5173/login/callback?email={mentor_email}")
 
-    # Default: scheduling flow → ScheduleConfirm
-    return redirect(f"http://localhost:5173/schedule-confirm?email={mentor_email}")
 
 
 # ----------------------------
