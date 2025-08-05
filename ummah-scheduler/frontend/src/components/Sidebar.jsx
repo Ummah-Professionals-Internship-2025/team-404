@@ -19,6 +19,15 @@ export default function Sidebar() {
         <button onClick={() => { setOpen(false); navigate('/'); }}>Dashboard</button>
         <button onClick={() => { setOpen(false); navigate('/followup'); }}>Follow-Up</button>
         <button onClick={() => { setOpen(false); navigate('/admin-login'); }}>Admin Login</button>
+        <button
+    onClick={() => {
+      sessionStorage.removeItem("mentorEmail");
+      window.location.href = "/login";
+    }}
+    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+  >
+    Logout
+  </button>
       </div>
     </div>
   );

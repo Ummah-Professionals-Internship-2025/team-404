@@ -1,0 +1,105 @@
+/* src/components/Login.css */
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.login-container {
+  height: 100vh;
+  width: 100vw;
+  background: radial-gradient(ellipse at top left, #0f172a, #0e1e38 60%);
+  background-size: 200% 200%;
+  animation: bgFlow 20s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes bgFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.glow {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(59,130,246,0.5), transparent 70%);
+  filter: blur(100px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.glow.top-left {
+  top: -150px;
+  left: -150px;
+}
+
+.glow.bottom-right {
+  bottom: -150px;
+  right: -150px;
+}
+
+.login-card {
+  z-index: 1;
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1.5rem;
+  padding: 4rem 3rem;
+  width: 480px; /* Increased from 400px */
+  text-align: center;
+  color: white;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.login-logo {
+  width: 220px; /* Was 180px */
+  margin-bottom: 2rem;
+}
+
+.login-header {
+  font-size: 2.4rem; /* Was 2rem */
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #ffffff;
+}
+
+.login-subtext {
+  font-size: 1.2rem; /* Was 1rem */
+  color: #cbd5e1;
+  margin-bottom: 2.5rem;
+}
+
+.google-login-button {
+  background-color: #ffffff;
+  color: #1e3a8a;
+  padding: 0.85rem 1.5rem;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  font-weight: 600;
+  display: inline-flex;  /* ⬅️ Use inline-flex to center inside parent */
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
+  margin: 0 auto; /* ✅ Center button horizontally */
+}
+
+
+.google-login-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 30px rgba(255, 255, 255, 0.2);
+}
+
+.google-icon {
+  width: 20px;
+  height: 20px;
+}
