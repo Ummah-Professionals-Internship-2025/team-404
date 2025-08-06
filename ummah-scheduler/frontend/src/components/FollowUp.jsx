@@ -217,7 +217,22 @@ export default function FollowUp() {
                   const body = `Hi ${studentName},\n\nI hope you're doing well! I'm following up to see if you'd like a second mentorship session.\nIf you're interested, let me know and we can schedule a new meeting.\n\n- ${mentorEmail}`;
 
                   const url = getWebmailUrl(studentEmail, subject, body);
+
+                  // ✅ Log the message to the backend
+                  fetch("http://localhost:5050/api/log-message", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                      mentorEmail: mentorEmail,
+                      studentName: studentName
+                    })
+                  });
+
+                  // ✅ Open the email compose window
                   window.open(url, "_blank");
+
                 }}
               >
                 Send a Message

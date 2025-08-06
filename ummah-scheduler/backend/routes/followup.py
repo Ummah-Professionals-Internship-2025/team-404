@@ -6,6 +6,8 @@ from pathlib import Path
 import sqlite3
 from datetime import datetime
 import traceback
+from db import log_mentor_action
+
 
 followup_bp = Blueprint('followup', __name__)
 
@@ -185,6 +187,11 @@ def save_submission_status():
             ))
             conn.commit()
             print(f"✅ SQLite updated for ID {sub_id}")
+
+            if new_status == "Done" and picked_by:
+                log_mentor_action(picked_by, "done", f"for {full_fields['name']}")
+                
+
 
         return jsonify({"message": "Status saved (JSON + SQLite)"}), 200
 

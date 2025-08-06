@@ -12,6 +12,7 @@ import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
 import Login from './components/Login';
 import LoginCallback from './components/LoginCallback';
+import AdminStatistics from './components/AdminStatistics';
 
 function RequireAuth({ children }) {
   const navigate = useNavigate();
@@ -433,11 +434,10 @@ function Dashboard() {
 
 export default function App() {
   const location = useLocation();
-  const hideSidebar = location.pathname === "/login";
+  
 
   return (
     <>
-      {!hideSidebar && <Sidebar />}
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/login/callback" element={<LoginCallback />} />
@@ -469,6 +469,7 @@ export default function App() {
         />
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/admin-statistics" element={<AdminStatistics />} />
       </Routes>
     </>
   );

@@ -5,6 +5,8 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 import os
 import pathlib
+from db import log_mentor_action
+
 
 auth_bp = Blueprint("auth", __name__)
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # Enable HTTP for localhost testing
@@ -79,6 +81,8 @@ def oauth2callback():
         return "Failed to get user email", 400
 
     mentor_tokens[mentor_email] = credentials_to_dict(credentials)
+    log_mentor_action(mentor_email, "login")
+
 
     flow_type = session.get("flow")
     if flow_type == "message":
@@ -86,9 +90,7 @@ def oauth2callback():
     elif flow_type == "schedule":
         return redirect(f"http://localhost:5173/schedule-confirm?email={mentor_email}")
     else:
-        # default login
         return redirect(f"http://localhost:5173/login/callback?email={mentor_email}")
-
 
 
 # ----------------------------

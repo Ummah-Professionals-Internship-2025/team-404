@@ -69,7 +69,7 @@ def list_admin_submissions():
             SELECT 
                 id, name, email, status, pickedBy, pickedByEmail, 
                 event_id, phone, industry, academicStanding,
-                availability, timeline, resume, otherInfo, submitted
+                availability, timeline, resume, otherInfo, submitted, updated_at
             FROM admin_submissions
             ORDER BY submitted DESC
         """).fetchall()
