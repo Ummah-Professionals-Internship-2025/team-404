@@ -12,11 +12,13 @@ export default function ScheduleConfirm() {
     const mentorEmail = params.get("email") || sessionStorage.getItem("mentorEmail");
     const studentId = sessionStorage.getItem("studentId");
     const meetingTime = sessionStorage.getItem("meetingTime");
+    const fromFollowUp = sessionStorage.getItem("fromFollowUp") === "true";
 
     console.log("Confirm page loaded with:", {
       studentId,
       mentorEmail,
-      meetingTime
+      meetingTime,
+      fromFollowUp
     });
 
     if (!mentorEmail || !studentId || !meetingTime) {
@@ -25,7 +27,7 @@ export default function ScheduleConfirm() {
       return;
     }
 
-    // 1️⃣ Fetch live student info from internal dashboard API
+    // 1️⃣ Fetch live student info
     fetch('http://localhost:5050/api/submissions')
       .then(res => res.json())
       .then(data => {
@@ -41,7 +43,7 @@ export default function ScheduleConfirm() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            id: studentId, // ✅ used for SQLite update
+            id: studentId,
             studentEmail: student.email,
             mentorEmail,
             time: meetingTime
@@ -55,13 +57,13 @@ export default function ScheduleConfirm() {
               return;
             }
 
-            // 3️⃣ Save status to internal dash JSON + SQLite for admin
+            // 3️⃣ Save status to JSON + SQLite
             return fetch('http://localhost:5050/api/save-status', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 id: studentId,
-                status: 'In Progress',
+                status: fromFollowUp ? 'Done' : 'In Progress', // ✅ stay Done if follow-up
                 pickedBy: mentorEmail,
                 name: student.name || "",
                 email: student.email || "",
@@ -79,24 +81,25 @@ export default function ScheduleConfirm() {
             })
               .then(() => {
                 alert(`✅ Invite sent!\nGoogle Meet: ${data.eventLink}`);
-                navigate("/"); // back to dashboard
+                sessionStorage.removeItem("fromFollowUp");
+                navigate(fromFollowUp ? "/followup" : "/"); // ✅ redirect appropriately
               })
               .catch((err) => {
                 console.error("Failed to save status:", err);
                 alert(`Meeting sent!\nGoogle Meet: ${data.eventLink}\n⚠️ Status not saved.`);
-                navigate("/");
+                navigate(fromFollowUp ? "/followup" : "/");
               });
           })
           .catch((err) => {
             console.error("❌ Error scheduling meeting:", err);
             alert("Failed to schedule meeting. Check backend logs.");
-            navigate("/");
+            navigate(fromFollowUp ? "/followup" : "/");
           });
       })
       .catch((err) => {
         console.error("❌ Failed to fetch student data:", err);
         alert("Failed to fetch student data.");
-        navigate("/");
+        navigate(fromFollowUp ? "/followup" : "/");
       });
   }, [location, navigate]);
 
