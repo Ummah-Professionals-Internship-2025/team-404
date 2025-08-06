@@ -29,6 +29,8 @@ export default function AdminStatistics() {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mentorActivity, setMentorActivity] = useState([]);
+  const [selectedMetric, setSelectedMetric] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     fetch('http://localhost:5050/api/admin-submissions')
@@ -50,10 +52,9 @@ export default function AdminStatistics() {
     const advisors = [...new Set(submissions.map(sub => sub.pickedBy).filter(Boolean))].length;
 
     const times = submissions
-    .filter(sub => sub.submitted && sub.updated_at)
-    .map(sub => new Date(sub.updated_at) - new Date(sub.submitted))
-    .filter(t => !isNaN(t));
-
+      .filter(sub => sub.submitted && sub.updated_at)
+      .map(sub => new Date(sub.updated_at) - new Date(sub.submitted))
+      .filter(t => !isNaN(t));
 
     const avgDays = times.length > 0
       ? (times.reduce((a, b) => a + b, 0) / times.length / (1000 * 60 * 60 * 24)).toFixed(1)
@@ -61,6 +62,8 @@ export default function AdminStatistics() {
 
     return { total, scheduled, canceled, advisors, avgDays };
   };
+
+  const metrics = getMetrics();
 
   const getIndustryChartData = () => {
     const counts = submissions.reduce((acc, { industry }) => {
@@ -137,7 +140,61 @@ export default function AdminStatistics() {
     }
   };
 
-  const metrics = getMetrics();
+  const renderModalContent = () => {
+    if (!selectedMetric) return null;
+
+    let content = null;
+
+    switch (selectedMetric) {
+      case 'submissions':
+        content = submissions.map((s, i) => (
+          <p key={i}>{s.name} – {s.email} – {s.phone}</p>
+        ));
+        break;
+      case 'proposed':
+        content = mentorActivity
+          .filter(entry => entry.action === 'propose')
+          .map((entry, i) => (
+            <p key={i}>{entry.email} has proposed a meeting {entry.details} – {new Date(entry.timestamp).toLocaleString()}</p>
+          ));
+        break;
+      case 'canceled':
+        content = submissions
+            .filter(sub => (sub.status || '').toLowerCase() === 'canceled')
+            .map((sub, i) => (
+            <p key={i}>
+                {sub.pickedByEmail || 'Unknown mentor'} canceled a meeting with {sub.name} – {sub.email} – {sub.phone}
+            </p>
+            ));
+        break;
+
+      case 'advisors':
+        const uniqueAdvisors = [...new Set(submissions.map(sub => sub.pickedBy).filter(Boolean))];
+        content = uniqueAdvisors.map((advisor, i) => <p key={i}>{advisor}</p>);
+        break;
+      case 'avgDays':
+        content = submissions
+          .filter(sub => sub.submitted && sub.updated_at)
+          .map((sub, i) => (
+            <p key={i}>
+              {sub.name} – submitted: {new Date(sub.submitted).toLocaleDateString()} → scheduled: {new Date(sub.updated_at).toLocaleDateString()}
+            </p>
+          ));
+        break;
+      default:
+        content = <p>No data available</p>;
+    }
+
+    return (
+      <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <button className="close-btn" onClick={() => setShowModal(false)}>&times;</button>
+          <h2 style={{ marginBottom: '16px' }}>{selectedMetric.toUpperCase()}</h2>
+          <div style={{ maxHeight: '400px', overflowY: 'auto' }}>{content}</div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="admin-page">
@@ -154,11 +211,21 @@ export default function AdminStatistics() {
         ) : (
           <>
             <div className="card-grid">
-              <div className="stat-card"><strong>Total Submissions:</strong> {metrics.total}</div>
-              <div className="stat-card"><strong>Meetings Proposed:</strong> {metrics.scheduled}</div>
-              <div className="stat-card"><strong>Meetings Canceled:</strong> {metrics.canceled}</div>
-              <div className="stat-card"><strong>Advisors:</strong> {metrics.advisors}</div>
-              <div className="stat-card"><strong>Avg Days to Schedule:</strong> {metrics.avgDays}</div>
+              <div className="stat-card" onClick={() => { setSelectedMetric("submissions"); setShowModal(true); }}>
+                <strong>Total Submissions:</strong> {metrics.total}
+              </div>
+              <div className="stat-card" onClick={() => { setSelectedMetric("proposed"); setShowModal(true); }}>
+                <strong>Meetings Proposed:</strong> {metrics.scheduled}
+              </div>
+              <div className="stat-card" onClick={() => { setSelectedMetric("canceled"); setShowModal(true); }}>
+                <strong>Meetings Canceled:</strong> {metrics.canceled}
+              </div>
+              <div className="stat-card" onClick={() => { setSelectedMetric("advisors"); setShowModal(true); }}>
+                <strong>Unique Advisors:</strong> {metrics.advisors}
+              </div>
+              <div className="stat-card" onClick={() => { setSelectedMetric("avgDays"); setShowModal(true); }}>
+                <strong>Avg Days to Schedule:</strong> {metrics.avgDays}
+              </div>
             </div>
 
             <div className="side-by-side-charts">
@@ -177,49 +244,51 @@ export default function AdminStatistics() {
               <Line data={getSubmissionTrendData()} />
             </div>
 
-            <h2 style={{ marginTop: '48px' }}>🗂️ Activity Center</h2>
-                <div className="table-wrapper" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Activity</th>
-                        <th>Time</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {mentorActivity.map((entry, index) => {
-                        const base = entry.email;
-                        const action = entry.action;
-                        const details = entry.details ? ` ${entry.details}` : "";
-                        let description = "";
+            <h2 style={{ marginTop: '48px' }}>Activity Center</h2>
+            <div className="table-wrapper" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Activity</th>
+                    <th>Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {mentorActivity.map((entry, index) => {
+                    const base = entry.email;
+                    const action = entry.action;
+                    const details = entry.details ? ` ${entry.details}` : "";
+                    let description = "";
 
-                        switch (action) {
-                        case 'login':
-                            description = `${base} has logged in`;
-                            break;
-                        case 'propose':
-                            description = `${base} has proposed a meeting${details}`;
-                            break;
-                        case 'cancel':
-                            description = `${base} has canceled a meeting${details}`;
-                            break;
-                        case 'message':
-                            description = `${base} has sent a message${details}`;
-                            break;
-                        default:
-                            description = `${base} performed ${action}${details}`;
-                        }
+                    switch (action) {
+                      case 'login':
+                        description = `${base} has logged in`;
+                        break;
+                      case 'propose':
+                        description = `${base} has proposed a meeting${details}`;
+                        break;
+                      case 'cancel':
+                        description = `${base} has canceled a meeting${details}`;
+                        break;
+                      case 'message':
+                        description = `${base} has sent a message${details}`;
+                        break;
+                      default:
+                        description = `${base} performed ${action}${details}`;
+                    }
 
-                        return (
-                        <tr key={index}>
-                            <td>{description}</td>
-                            <td>{new Date(entry.timestamp).toLocaleString()}</td>
-                        </tr>
-                        );
-                    })}
-                    </tbody>
-                </table>
-                </div>
+                    return (
+                      <tr key={index}>
+                        <td>{description}</td>
+                        <td>{new Date(entry.timestamp).toLocaleString()}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {showModal && renderModalContent()}
           </>
         )}
       </div>
