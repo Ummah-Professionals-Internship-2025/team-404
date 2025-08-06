@@ -1,14 +1,14 @@
-//admindashboard.jsx in components
-// src/components/AdminDashboard.jsx
-import React, { useEffect, useState } from 'react';
-import Sidebar from './Sidebar';
+import React, { useEffect, useState, useRef } from 'react';
+import './AdminDashboard.css';
 
 export default function AdminDashboard() {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef();
 
   useEffect(() => {
-    // Handle ?loggedIn=true after Google OAuth
     const params = new URLSearchParams(window.location.search);
     const isFromLogin = params.get("loggedIn") === "true";
 
@@ -24,10 +24,18 @@ export default function AdminDashboard() {
     }
 
     fetchSubmissions();
+
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const fetchSubmissions = () => {
-    // ✅ Fetch from admin-submissions so we get event_id and pickedByEmail
     fetch('http://localhost:5050/api/admin-submissions')
       .then((res) => res.json())
       .then((data) => {
@@ -50,7 +58,7 @@ export default function AdminDashboard() {
           alert(`Error canceling meeting: ${data.error}`);
         } else {
           alert(`✅ ${data.message}`);
-          fetchSubmissions(); // Refresh the list after cancel
+          fetchSubmissions();
         }
       })
       .catch((err) => {
@@ -60,54 +68,111 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="app-container">
-      <header className="app-header">
-        <h1>Admin Dashboard</h1>
-        <Sidebar />
+    <div className="admin-page">
+      <header className="admin-header">
+        <h1 className="dashboard-title">ADMIN DASHBOARD</h1>
+
+        <div className="admin-actions">
+          
+          <div className="menu-wrapper" ref={menuRef}>
+            <button
+              className="menu-toggle"
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Open navigation menu"
+              style={{ color: '#2563eb' }} // 🔵 Blue hamburger
+            >
+              ☰
+            </button>
+
+            {menuOpen && (
+              <div className="dropdown-menu">
+                <a href="/admin-dashboard">🏠 Dashboard</a>
+                <a href="/admin-statistics">📊 Statistics</a>
+                <a href="/">🔙 Exit Admin</a>
+              </div>
+            )}
+          </div>
+        </div>
       </header>
 
-      <div className="content-container">
+      <div className="dashboard-content">
         {loading ? (
-          <p>Loading submissions...</p>
+          <p className="dashboard-status-text">Loading submissions...</p>
         ) : submissions.length === 0 ? (
-          <p>No admin submissions yet.</p>
+          <p className="dashboard-status-text">No admin submissions yet.</p>
         ) : (
-          <div className="submissions-grid">
-            {submissions.map((sub) => (
-              <div key={sub.id} className="submission-card">
-                <div className="card-content">
-                  <div className="student-info">
-                    <p className="student-name">{sub.name}</p>
-                    <p>{sub.email}</p>
-                    <p><strong>Status:</strong> {sub.status || 'To Do'}</p>
-                    <p><strong>Picked By:</strong> {sub.pickedBy || 'N/A'}</p>
-                    <p><strong>Meeting Event:</strong> {sub.event_id || 'None yet'}</p>
+          <>
+            <p className="dashboard-hint">Submissions are shown from most recent to oldest.</p>
+            <div className="submission-list">
+              {submissions.map((sub) => (
+                <div
+                  key={sub.id}
+                  className="submission-card horizontal-card"
+                  onClick={() => setSelected(sub)}
+                  role="button"
+                  tabIndex={0}
+                >
+                  <div className="horizontal-info">
+                    <div className="card-top">
+                      <h3 className="student-name">{sub.name}</h3>
+                      <p className="student-email">{sub.email}</p>
+                    </div>
+                    <div className="card-details">
+                      <p><strong>Status:</strong> {sub.status || 'To Do'}</p>
+                      <p><strong>Picked By:</strong> {sub.pickedBy || 'N/A'}</p>
+                      <p><strong>Event:</strong> {sub.event_id || 'None yet'}</p>
+                      <p><strong>Submitted:</strong> {new Date(sub.submitted).toLocaleString()}</p>
+                    </div>
                   </div>
-                  <div>
+                  <div className="card-actions">
                     <button
-                      className="propose-btn"
-                      onClick={() => {
+                      className="message-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
                         const recipient = encodeURIComponent(sub.email);
                         const subject = encodeURIComponent("Follow-up on your Ummah Professionals mentorship");
-                        const body = encodeURIComponent(
-                          `Hi ${sub.name},\n\nJust checking in to see how your mentorship is going.\n\n- UP Team`
-                        );
+                        const body = encodeURIComponent(`Hi ${sub.name},\n\nJust checking in to see how your mentorship is going.\n\n- UP Team`);
                         const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${recipient}&su=${subject}&body=${body}`;
                         window.open(gmailUrl, '_blank');
                       }}
                     >
                       Message
                     </button>
-                    <button className="cancel-btn" onClick={() => handleCancel(sub)}>
+                    <button
+                      className="cancel-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCancel(sub);
+                      }}
+                    >
                       Cancel
                     </button>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
+
+      {selected && (
+        <div className="modal-overlay" onClick={() => setSelected(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="close-btn" onClick={() => setSelected(null)}>
+              &times;
+            </button>
+            <h2>{selected.name}</h2>
+            <p><strong>Email:</strong> {selected.email}</p>
+            <p><strong>Phone:</strong> {selected.phone}</p>
+            <p><strong>Industry:</strong> {selected.industry}</p>
+            <p><strong>Academic Standing:</strong> {selected.academicStanding}</p>
+            <p><strong>Availability:</strong> {selected.availability}</p>
+            <p><strong>Timeline:</strong> {selected.timeline}</p>
+            <p><strong>Resume:</strong> <a href={selected.resume} target="_blank" rel="noreferrer">View</a></p>
+            <p><strong>Submitted:</strong> {new Date(selected.submitted).toLocaleString()}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

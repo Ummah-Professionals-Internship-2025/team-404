@@ -8,6 +8,8 @@ from routes.auth import mentor_tokens
 from app_config import GOOGLE_CALENDAR_TIMEZONE
 import sqlite3, os
 from datetime import datetime as dt
+from db import log_mentor_action
+
 
 schedule = Blueprint('schedule', __name__)
 
@@ -99,6 +101,8 @@ def schedule_meeting():
             conn.commit()
             conn.close()
             print(f"✅ SQLite updated with event_id for {student_email}")
+
+            log_mentor_action(mentor_email, "propose", f"with {student_email}")
         except Exception as db_err:
             print("⚠️ Warning: Could not update SQLite with event info:", db_err)
 
