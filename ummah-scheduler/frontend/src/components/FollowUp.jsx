@@ -14,11 +14,15 @@ export default function FollowUp() {
   const [selectedProfession, setSelectedProfession] = useState('');
   const navigate = useNavigate();
 
-  // Fetch Done submissions
+  // Fetch Done submissions & filter soft-deleted IDs
   useEffect(() => {
     fetch('http://localhost:5050/api/followup')
       .then(res => res.json())
-      .then(data => setDoneSubmissions(data))
+      .then(data => {
+        const deletedIds = JSON.parse(localStorage.getItem("softDeletedFollowUps") || "[]");
+        const filtered = data.filter(item => !deletedIds.includes(item.id));
+        setDoneSubmissions(filtered);
+      })
       .catch(err => console.error("Error fetching follow-ups:", err));
   }, []);
 
@@ -28,17 +32,13 @@ export default function FollowUp() {
     const encodedBody = encodeURIComponent(body);
     const domain = email.split('@')[1].toLowerCase();
 
-    if (domain.includes('gmail.com')) {
+    if (domain.includes('gmail.com'))
       return `https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${encodedSubject}&body=${encodedBody}`;
-    }
-    if (domain.includes('outlook.com') || domain.includes('hotmail.com') || domain.includes('live.com')) {
+    if (domain.includes('outlook.com') || domain.includes('hotmail.com') || domain.includes('live.com'))
       return `https://outlook.office.com/mail/deeplink/compose?to=${email}&subject=${encodedSubject}&body=${encodedBody}`;
-    }
-    if (domain.includes('yahoo.com')) {
+    if (domain.includes('yahoo.com'))
       return `https://compose.mail.yahoo.com/?to=${email}&subject=${encodedSubject}&body=${encodedBody}`;
-    }
 
-    // Fallback to mailto
     return `mailto:${email}?subject=${encodedSubject}&body=${encodedBody}`;
   }
 
@@ -65,16 +65,24 @@ export default function FollowUp() {
         window.history.replaceState({}, document.title, cleanUrl);
 
         const subject = "Follow-Up on Your Ummah Professionals Mentorship";
-        const body = `Hi ${studentName},\n\n` +
-                     `I hope you're doing well! I'm following up to see if you'd like a second mentorship session.\n` +
-                     `If you're interested, let me know and we can schedule a new meeting.\n\n` +
-                     `- ${mentorEmail}`;
+        const body = `Hi ${studentName},\n\nI hope you're doing well! I'm following up to see if you'd like a second mentorship session.\nIf you're interested, let me know and we can schedule a new meeting.\n\n- ${mentorEmail}`;
 
         const url = getWebmailUrl(studentEmail, subject, body);
         setTimeout(() => window.open(url, "_blank"), 400);
       }
     }
   }, []);
+
+  // Soft delete handler (UI only, persists in localStorage)
+  const handleSoftDelete = (id) => {
+    setDoneSubmissions(prev => prev.filter(item => item.id !== id));
+
+    const deletedIds = JSON.parse(localStorage.getItem("softDeletedFollowUps") || "[]");
+    if (!deletedIds.includes(id)) {
+      deletedIds.push(id);
+      localStorage.setItem("softDeletedFollowUps", JSON.stringify(deletedIds));
+    }
+  };
 
   return (
     <div className="app-container">
@@ -143,6 +151,17 @@ export default function FollowUp() {
                         )}
                       </div>
                     </div>
+
+                    {/* Soft Delete button */}
+                    <button
+                      className="soft-delete-btn mt-2 bg-gray-300 hover:bg-gray-400 text-black px-2 py-1 rounded"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSoftDelete(item.id);
+                      }}
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               ))}
@@ -172,6 +191,7 @@ export default function FollowUp() {
                 className="propose-btn"
                 onClick={() => {
                   sessionStorage.setItem("studentId", selected.id);
+                  sessionStorage.setItem("fromFollowUp", "true"); // ✅ flag for ScheduleConfirm
                   navigate(`/followup-schedule/${selected.id}`);
                 }}
               >
@@ -194,10 +214,7 @@ export default function FollowUp() {
                   }
 
                   const subject = "Follow-Up on Your Ummah Professionals Mentorship";
-                  const body = `Hi ${studentName},\n\n` +
-                               `I hope you're doing well! I'm following up to see if you'd like a second mentorship session.\n` +
-                               `If you're interested, let me know and we can schedule a new meeting.\n\n` +
-                               `- ${mentorEmail}`;
+                  const body = `Hi ${studentName},\n\nI hope you're doing well! I'm following up to see if you'd like a second mentorship session.\nIf you're interested, let me know and we can schedule a new meeting.\n\n- ${mentorEmail}`;
 
                   const url = getWebmailUrl(studentEmail, subject, body);
                   window.open(url, "_blank");
