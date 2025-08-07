@@ -13,6 +13,7 @@ import {
   Legend
 } from 'chart.js';
 import './AdminDashboard.css';
+import logo from '../assets/blue-horizontal.png';
 
 ChartJS.register(
   ArcElement,
@@ -199,11 +200,18 @@ export default function AdminStatistics() {
   return (
     <div className="admin-page">
       <header className="admin-header">
-        <h1 className="dashboard-title">ADMIN STATISTICS</h1>
-        <div className="admin-actions">
-          <a href="/admin-dashboard" className="stats-btn">← Back to Dashboard</a>
+        <div className="admin-header-section">
+            <img src={logo} alt="Logo" className="admin-logo" />
         </div>
-      </header>
+
+        <h1 className="admin-header-center">ADMIN STATISTICS</h1>
+
+        <div className="admin-header-section admin-actions">
+            <a href="/admin-dashboard" className="stats-btn">← Back to Dashboard</a>
+        </div>
+        </header>
+
+
 
       <div className="dashboard-content">
         {loading ? (
@@ -221,7 +229,7 @@ export default function AdminStatistics() {
                 <strong>Meetings Canceled:</strong> {metrics.canceled}
               </div>
               <div className="stat-card" onClick={() => { setSelectedMetric("advisors"); setShowModal(true); }}>
-                <strong>Unique Advisors:</strong> {metrics.advisors}
+                <strong>Advisors:</strong> {metrics.advisors}
               </div>
               <div className="stat-card" onClick={() => { setSelectedMetric("avgDays"); setShowModal(true); }}>
                 <strong>Avg Days to Schedule:</strong> {metrics.avgDays}
