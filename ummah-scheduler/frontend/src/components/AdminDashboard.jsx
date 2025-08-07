@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import './AdminDashboard.css';
+import logo from '../assets/blue-horizontal.png';
 
 export default function AdminDashboard() {
   const [submissions, setSubmissions] = useState([]);
@@ -70,20 +71,22 @@ export default function AdminDashboard() {
   return (
     <div className="admin-page">
       <header className="admin-header">
-        <h1 className="dashboard-title">ADMIN DASHBOARD</h1>
+        <div className="admin-header-left">
+          <img src={logo} alt="Logo" className="admin-logo" />
+        </div>
 
-        <div className="admin-actions">
-          
+        <h1 className="admin-header-center">ADMIN DASHBOARD</h1>
+
+        <div className="admin-header-right">
           <div className="menu-wrapper" ref={menuRef}>
             <button
               className="menu-toggle"
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Open navigation menu"
-              style={{ color: '#2563eb' }} // 🔵 Blue hamburger
+              style={{ color: '#2563eb' }}
             >
               ☰
             </button>
-
             {menuOpen && (
               <div className="dropdown-menu">
                 <a href="/admin-dashboard">🏠 Dashboard</a>
@@ -94,6 +97,9 @@ export default function AdminDashboard() {
           </div>
         </div>
       </header>
+
+
+
 
       <div className="dashboard-content">
         {loading ? (

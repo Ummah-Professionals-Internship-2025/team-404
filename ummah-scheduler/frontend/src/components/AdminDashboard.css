@@ -8,11 +8,42 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 32px 48px;
-  background-color: #ffffff;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-  border-bottom: 1px solid #e5e7eb;
+  padding: 16px 24px;
+  background-color: white;
+  border-bottom: 1px solid #ddd;
+  position: relative;
 }
+
+.admin-header-left {
+  display: flex;
+  align-items: center;
+  z-index: 2;
+}
+
+.admin-header-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  z-index: 2;
+}
+
+.admin-header-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1e293b;
+  white-space: nowrap;
+}
+
+.admin-logo {
+  height: 40px;
+  width: auto;
+}
+
+
+
 
 .dashboard-title {
   font-size: 1.8rem;
