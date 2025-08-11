@@ -1,12 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react';
 import './AdminDashboard.css';
-import logo from '../assets/blue-horizontal.png';
+
+const SOFT_DELETE_KEY = "softDeletedAdminSubmissions";
 
 export default function AdminDashboard() {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showDeleted, setShowDeleted] = useState(false); // optional toggle
   const menuRef = useRef();
 
   useEffect(() => {
@@ -40,10 +42,28 @@ export default function AdminDashboard() {
     fetch('http://localhost:5050/api/admin-submissions')
       .then((res) => res.json())
       .then((data) => {
-        setSubmissions(data);
+        const deletedIds = JSON.parse(localStorage.getItem(SOFT_DELETE_KEY) || "[]");
+        const filtered = showDeleted
+          ? data
+          : data.filter(item => !deletedIds.includes(item.id));
+        setSubmissions(filtered);
         setLoading(false);
       });
   };
+
+  // Re-apply filter when toggling showDeleted
+  useEffect(() => {
+    // re-run filter without re-hitting API
+    const deletedIds = JSON.parse(localStorage.getItem(SOFT_DELETE_KEY) || "[]");
+    setSubmissions(prev => {
+      if (showDeleted) return [...prev, ...[]]; // no-op: show all requires refetch
+      // If we filtered before toggle, ensure refetch so we have the full list to filter from
+      return prev.filter(item => !deletedIds.includes(item.id));
+    });
+    // Safer: just refetch so we always have full data then apply filter
+    fetchSubmissions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showDeleted]);
 
   const handleCancel = (sub) => {
     if (!window.confirm(`Are you sure you want to cancel the meeting for ${sub.name}?`)) return;
@@ -68,16 +88,31 @@ export default function AdminDashboard() {
       });
   };
 
+  // 🧹 Soft delete (UI only; ID saved in localStorage, DB untouched)
+  const handleSoftDelete = (e, id) => {
+    e.stopPropagation();
+    // Remove from current UI list
+    setSubmissions(prev => prev.filter(item => item.id !== id));
+    // Persist the hidden ID
+    const deletedIds = JSON.parse(localStorage.getItem(SOFT_DELETE_KEY) || "[]");
+    if (!deletedIds.includes(id)) {
+      deletedIds.push(id);
+      localStorage.setItem(SOFT_DELETE_KEY, JSON.stringify(deletedIds));
+    }
+  };
+
+  // ♻️ Optional restore helpers
+  const handleRestoreAll = () => {
+    localStorage.removeItem(SOFT_DELETE_KEY);
+    fetchSubmissions();
+  };
+
   return (
     <div className="admin-page">
       <header className="admin-header">
-        <div className="admin-header-left">
-          <img src={logo} alt="Logo" className="admin-logo" />
-        </div>
+        <h1 className="dashboard-title">ADMIN DASHBOARD</h1>
 
-        <h1 className="admin-header-center">ADMIN DASHBOARD</h1>
-
-        <div className="admin-header-right">
+        <div className="admin-actions">
           <div className="menu-wrapper" ref={menuRef}>
             <button
               className="menu-toggle"
@@ -87,19 +122,34 @@ export default function AdminDashboard() {
             >
               ☰
             </button>
+
             {menuOpen && (
               <div className="dropdown-menu">
                 <a href="/admin-dashboard">🏠 Dashboard</a>
                 <a href="/admin-statistics">📊 Statistics</a>
                 <a href="/">🔙 Exit Admin</a>
+                <div style={{ padding: '8px 12px' }}>
+                  <label style={{ display: 'flex', gap: 8, alignItems: 'center', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={showDeleted}
+                      onChange={() => setShowDeleted(v => !v)}
+                    />
+                    Show soft-deleted
+                  </label>
+                  <button
+                    className="message-btn"
+                    style={{ marginTop: 8 }}
+                    onClick={handleRestoreAll}
+                  >
+                    Restore All
+                  </button>
+                </div>
               </div>
             )}
           </div>
         </div>
       </header>
-
-
-
 
       <div className="dashboard-content">
         {loading ? (
@@ -152,6 +202,14 @@ export default function AdminDashboard() {
                       }}
                     >
                       Cancel
+                    </button>
+                    {/* 🧹 Soft Delete button (UI only) */}
+                    <button
+                      className="soft-delete-btn"
+                      style={{ marginLeft: 8, background: '#e5e7eb', color: '#111827', padding: '6px 10px', borderRadius: 8 }}
+                      onClick={(e) => handleSoftDelete(e, sub.id)}
+                    >
+                      Delete
                     </button>
                   </div>
                 </div>
