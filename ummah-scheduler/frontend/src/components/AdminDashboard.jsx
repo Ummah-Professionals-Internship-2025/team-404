@@ -88,7 +88,11 @@ export default function AdminDashboard() {
       });
   };
 
+<<<<<<< Updated upstream
   // 🧹 Soft delete (UI only; ID saved in localStorage, DB untouched)
+=======
+  
+>>>>>>> Stashed changes
   const handleSoftDelete = (e, id) => {
     e.stopPropagation();
     // Remove from current UI list
@@ -203,7 +207,11 @@ export default function AdminDashboard() {
                     >
                       Cancel
                     </button>
+<<<<<<< Updated upstream
                     {/* 🧹 Soft Delete button (UI only) */}
+=======
+                   
+>>>>>>> Stashed changes
                     <button
                       className="soft-delete-btn"
                       style={{ marginLeft: 8, background: '#e5e7eb', color: '#111827', padding: '6px 10px', borderRadius: 8 }}
