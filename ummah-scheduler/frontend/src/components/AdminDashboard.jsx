@@ -89,7 +89,11 @@ export default function AdminDashboard() {
   };
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   // 🧹 Soft delete (UI only; ID saved in localStorage, DB untouched)
+=======
+  
+>>>>>>> Stashed changes
 =======
   
 >>>>>>> Stashed changes
@@ -208,7 +212,11 @@ export default function AdminDashboard() {
                       Cancel
                     </button>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     {/* 🧹 Soft Delete button (UI only) */}
+=======
+                   
+>>>>>>> Stashed changes
 =======
                    
 >>>>>>> Stashed changes
