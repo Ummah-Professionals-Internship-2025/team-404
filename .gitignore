@@ -4,3 +4,5 @@ __pycache__/
 .envummah-scheduler/backend/credentials/oauth_client_secret.json
 .envummah-scheduler/backend/credentials/
 ummah-scheduler/backend/admin_data.db
+.env
+ummah-scheduler/backend/credentials/
