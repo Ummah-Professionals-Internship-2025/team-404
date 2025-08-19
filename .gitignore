@@ -1,3 +1,6 @@
-
 .env
-ummah-scheduler/backend/credentials/
+*.db
+admin_token.json
+oauth_client_secret.json
+node_modules/
+__pycache__/
