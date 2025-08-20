@@ -1,5 +1,12 @@
-
 .env
+<<<<<<< HEAD
 ummah-scheduler/backend/credentials/
 
 ummah-scheduler/backend/admin_data.db
+=======
+*.db
+admin_token.json
+oauth_client_secret.json
+node_modules/
+__pycache__/
+>>>>>>> origin/main
