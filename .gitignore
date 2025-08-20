@@ -1,12 +1,21 @@
+# Env & secrets
 .env
-<<<<<<< HEAD
-ummah-scheduler/backend/credentials/
-
-ummah-scheduler/backend/admin_data.db
-=======
-*.db
 admin_token.json
 oauth_client_secret.json
+
+# Project-local secrets & data
+ummah-scheduler/backend/credentials/
+ummah-scheduler/backend/admin_data.db
+
+# Databases (generic)
+*.db
+
+# OS / Python / Node junk
+.DS_Store
 node_modules/
 __pycache__/
->>>>>>> origin/main
+*.py[cod]
+
+# Common build outputs
+dist/
+build/
