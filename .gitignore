@@ -1,3 +1,5 @@
 
 .env
 ummah-scheduler/backend/credentials/
+
+ummah-scheduler/backend/admin_data.db
