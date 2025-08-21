@@ -12,7 +12,7 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
-import './AdminStatistics.css';              // page-specific CSS
+import './AdminStatistics.css';
 import logo from '../assets/blue-horizontal.png';
 
 ChartJS.register(
@@ -24,6 +24,76 @@ ChartJS.register(
   LineElement,
   Tooltip,
   Legend
+);
+
+// --- Inline SVG icons (stroke follows currentColor) ---
+const IconUser = ({ className = '', size = 18 }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none"
+       xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <path d="M20 21a8 8 0 0 0-16 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+    <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="1.8"/>
+  </svg>
+);
+
+const IconClock = ({ className = '', size = 18 }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none"
+       xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8"/>
+    <path d="M12 7v6l4 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const IconFilter = ({ className = '', size = 18 }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none"
+       xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <path d="M3 6h18M7 12h10M10 18h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+  </svg>
+);
+
+const IconPie = ({ className = '', size = 18 }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none"
+       xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <path d="M12 3v9h9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M21 12a9 9 0 1 1-9-9" stroke="currentColor" strokeWidth="1.8"/>
+  </svg>
+);
+
+const IconBars = ({ className = '', size = 18 }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none"
+       xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <path d="M5 12v7M12 5v14M19 9v10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+  </svg>
+);
+
+const IconTrend = ({ className = '', size = 18 }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none"
+       xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <path d="M3 17l6-6 4 4 8-8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const IconMoon = ({ className = '', size = 18 }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none"
+       xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"
+          stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const IconSun = ({ className = '', size = 18 }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none"
+       xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.8"/>
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+          stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+  </svg>
+);
+
+const IconChevronLeft = ({ className = '', size = 18 }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none"
+       xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
 );
 
 // 🔧 Normalize status variants (same map as Dashboard)
@@ -50,18 +120,49 @@ const canonicalStatus = (raw) => {
   return CANON_MAP[key] || 'To Do';
 };
 
-// De-dupe by id helper
+// De-dupe by id helper (no ?? + || mixing)
+const getStableId = (item) => {
+  const primary = item?.id ?? item?._id ?? item?.submissionId;
+  if (primary !== undefined && primary !== null && primary !== '') return primary;
+
+  const email = item?.email ?? '';
+  const submittedLike = item?.submitted ?? item?.created_at ?? item?.createdAt ?? '';
+  const composite = `${email}|${submittedLike}`;
+  return composite !== '' ? composite : JSON.stringify(item);
+};
+
 const dedupeById = (arr) => {
   const seen = new Set();
   const out = [];
   for (const item of arr) {
-    const id = item?.id ?? item?._id ?? JSON.stringify(item);
+    const id = getStableId(item);
     if (!seen.has(id)) {
       seen.add(id);
       out.push(item);
     }
   }
   return out;
+};
+
+
+// Prefer-first helper
+const pickFirst = (...vals) => vals.find(v => v !== undefined && v !== null && v !== '');
+
+// Ensure submissions have consistent fields + canonical status
+const normalizeSubmission = (s) => {
+  const statusRaw = pickFirst(s.status, s.state, s.currentStatus, s.progress, s.phase);
+  const submitted = pickFirst(s.submitted, s.created_at, s.createdAt, s.created, s.timestamp, s.date);
+  const updated_at = pickFirst(s.updated_at, s.updatedAt, s.scheduled_at, s.scheduledAt, s.lastUpdated, s.modifiedAt);
+  const pickedBy = pickFirst(s.pickedBy, s.pickedByName, s.mentor, s.advisor, s.owner, s.assignedTo, s.pickedByEmail);
+  const industry = pickFirst(s.industry, s.segment, s.category, s.vertical);
+  return {
+    ...s,
+    status: canonicalStatus(statusRaw),
+    submitted,
+    updated_at,
+    pickedBy,
+    industry,
+  };
 };
 
 export default function AdminStatistics() {
@@ -91,56 +192,155 @@ export default function AdminStatistics() {
     });
   };
 
+  // Base presentation defaults (keep)
   useEffect(() => {
-    ChartJS.defaults.color = theme === 'dark' ? '#e5e7eb' : '#0f172a';
-    ChartJS.defaults.borderColor = theme === 'dark'
-      ? 'rgba(255,255,255,0.15)'
-      : 'rgba(0,0,0,0.08)';
+    const isDark = theme === 'dark';
+    ChartJS.defaults.color = isDark ? '#e5e7eb' : '#0f172a';
+    ChartJS.defaults.borderColor = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)';
+    ChartJS.defaults.font.family = "'Poppins', system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+    ChartJS.defaults.plugins.legend.position = 'bottom';
+    ChartJS.defaults.plugins.legend.labels.boxWidth = 10;
+    ChartJS.defaults.plugins.legend.labels.usePointStyle = true;
+    ChartJS.defaults.layout = { padding: { top: 6, left: 2, right: 2, bottom: 6 } };
+    ChartJS.defaults.scales = ChartJS.defaults.scales || {};
+    ['category','linear'].forEach(k => {
+      const c = ChartJS.defaults.scales[k] = ChartJS.defaults.scales[k] || {};
+      c.grid = { color: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)' };
+      c.ticks = { padding: 6 };
+    });
+    ChartJS.defaults.elements.bar.borderRadius = 10;
+    ChartJS.defaults.elements.line.tension = 0.35;
+    ChartJS.defaults.elements.point.radius = 2.5;
+    ChartJS.defaults.elements.point.hoverRadius = 5;
   }, [theme]);
+
+  // 🎨 Theme-aware options passed PER CHART + force remount on theme change
+  const chartTheme = useMemo(() => {
+    const isDark = theme === 'dark';
+    return {
+      text: isDark ? '#e5e7eb' : '#0f172a',
+      muted: isDark ? '#cbd5e1' : '#475569',
+      grid: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
+      border: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
+      tooltipBg: isDark ? 'rgba(15,23,42,0.92)' : 'rgba(255,255,255,0.98)',
+      tooltipText: isDark ? '#e5e7eb' : '#0f172a',
+    };
+  }, [theme]);
+
+  const commonXYOptions = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: { color: chartTheme.text, usePointStyle: true, boxWidth: 10 },
+        },
+        tooltip: {
+          backgroundColor: chartTheme.tooltipBg,
+          titleColor: chartTheme.tooltipText,
+          bodyColor: chartTheme.tooltipText,
+          borderColor: chartTheme.border,
+          borderWidth: 1,
+        },
+      },
+      scales: {
+        x: {
+          grid: { color: chartTheme.grid },
+          ticks: { color: chartTheme.muted },
+        },
+        y: {
+          grid: { color: chartTheme.grid },
+          ticks: { color: chartTheme.muted },
+        },
+      },
+    }),
+    [chartTheme]
+  );
+
+  const pieOptions = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: { color: chartTheme.text, usePointStyle: true, boxWidth: 10 },
+        },
+        tooltip: {
+          backgroundColor: chartTheme.tooltipBg,
+          titleColor: chartTheme.tooltipText,
+          bodyColor: chartTheme.tooltipText,
+          borderColor: chartTheme.border,
+          borderWidth: 1,
+        },
+      },
+    }),
+    [chartTheme]
+  );
+
+  const [chartKey, setChartKey] = useState(0);
+  useEffect(() => setChartKey(k => k + 1), [theme]);
 
   // ── Filters ────────────────────────────────────────────────────────────────
   const [search, setSearch] = useState('');
   const [advisor, setAdvisor] = useState('All');
   const [statusPill, setStatusPill] = useState('All');
-  const [timePreset, setTimePreset] = useState('30d');   // 'all' | '30d'
+  const [timePreset, setTimePreset] = useState('30d');   // 'all' | '<nd>'
 
   // Multi-select industries
   const [industryOpen, setIndustryOpen] = useState(false);
   const [industrySelected, setIndustrySelected] = useState(() => new Set()); // empty => All
   const industryMenuRef = useRef(null);
 
-  // 🚀 Fetch ALL submissions (work around any backend default limit)
+  // 🚀 Fetch ALL submissions (including "To Do" from alternate endpoints)
   useEffect(() => {
     let isMounted = true;
     (async () => {
       try {
         setLoading(true);
 
-        // Strategy A: ask backend for ALL explicitly
-        // (common patterns: ?all=true, ?limit=5000)
-        const tryAllUrls = [
+        // Primary sources first
+        const primaryUrls = [
           'http://localhost:5050/api/admin-submissions?all=true',
           'http://localhost:5050/api/admin-submissions?limit=5000',
         ];
 
+        // Additional likely sources for open/unscheduled leads
+        const todoUrls = [
+          // generic pools
+          'http://localhost:5050/api/submissions?all=true',
+          'http://localhost:5050/api/leads?all=true',
+          'http://localhost:5050/api/pending-submissions?all=true',
+          'http://localhost:5050/api/incoming-submissions?all=true',
+          // status-filtered variants
+          'http://localhost:5050/api/admin-submissions?status=todo',
+          'http://localhost:5050/api/admin-submissions?status=pending',
+          'http://localhost:5050/api/submissions?status=todo',
+          'http://localhost:5050/api/submissions?status=pending',
+          'http://localhost:5050/api/submissions?status=new',
+          'http://localhost:5050/api/submissions?status=to-do',
+        ];
+
         let all = [];
-        let gotAll = false;
 
-        for (const url of tryAllUrls) {
-          try {
-            const res = await fetch(url);
-            if (!res.ok) continue;
-            const data = await res.json();
-            if (Array.isArray(data) && data.length >= 1) {
-              all = data;
-              gotAll = true;
-              break;
-            }
-          } catch {}
-        }
+        // Helper to try a list of URLs
+        const tryUrls = async (urls) => {
+          for (const url of urls) {
+            try {
+              const res = await fetch(url);
+              if (!res.ok) continue;
+              const data = await res.json();
+              if (Array.isArray(data) && data.length) {
+                all = all.concat(data);
+              }
+            } catch {}
+          }
+        };
 
-        // Strategy B: paginate by offset/limit
-        if (!gotAll) {
+        // A) Try to get giant dumps
+        await tryUrls(primaryUrls);
+
+        // B) Paginate if needed
+        if (all.length === 0) {
           const LIMIT = 200;
           let offset = 0;
           while (true) {
@@ -150,12 +350,12 @@ export default function AdminStatistics() {
             const data = await res.json();
             if (!Array.isArray(data) || data.length === 0) break;
             all = all.concat(data);
-            if (data.length < LIMIT) break; // last page
+            if (data.length < LIMIT) break;
             offset += data.length;
           }
         }
 
-        // Strategy C: paginate by page/limit
+        // C) Page/limit style as fallback
         if (all.length === 0) {
           const LIMIT = 200;
           for (let page = 1; page <= 50; page++) {
@@ -169,25 +369,33 @@ export default function AdminStatistics() {
           }
         }
 
-        // Strategy D: final fallback to the base endpoint (maybe already returns all)
+        // D) Base endpoint as final fallback
         if (all.length === 0) {
-          const res = await fetch('http://localhost:5050/api/admin-submissions');
-          const data = await res.json();
-          if (Array.isArray(data)) all = data;
+          try {
+            const res = await fetch('http://localhost:5050/api/admin-submissions');
+            if (res.ok) {
+              const data = await res.json();
+              if (Array.isArray(data)) all = all.concat(data);
+            }
+          } catch {}
         }
 
-        // De-dupe and set
-        all = dedupeById(all);
+        // E) Now aggressively try likely "To Do" pools and merge in
+        await tryUrls(todoUrls);
+
+        // Normalize + de-dupe
+        let normalized = dedupeById(all).map(normalizeSubmission);
 
         if (isMounted) {
-          setSubmissions(all);
-          // Debug: status counts & total
-          const counts = all.reduce((acc, s) => {
-            const c = canonicalStatus(s.status);
+          setSubmissions(normalized);
+
+          // Debug counts in console (helps confirm "To Do" presence)
+          const counts = normalized.reduce((acc, s) => {
+            const c = s.status || 'To Do';
             acc[c] = (acc[c] || 0) + 1;
             return acc;
           }, {});
-          console.log('[AdminStatistics] Loaded submissions:', all.length, counts);
+          console.log('[AdminStatistics] Loaded submissions:', normalized.length, counts);
         }
       } catch (err) {
         console.error('[AdminStatistics] Failed to load submissions:', err);
@@ -198,7 +406,7 @@ export default function AdminStatistics() {
     return () => { isMounted = false; };
   }, []);
 
-  // (Optional) Try to fetch all mentor activity, too (same idea)
+  // Fetch mentor activity
   useEffect(() => {
     let isMounted = true;
     (async () => {
@@ -215,7 +423,8 @@ export default function AdminStatistics() {
             if (!res.ok) continue;
             const data = await res.json();
             if (Array.isArray(data) && data.length >= 1) {
-              all = data;
+              all = all;
+              all = all.concat(data);
               gotAll = true;
               break;
             }
@@ -274,27 +483,26 @@ export default function AdminStatistics() {
   const stringIncludes = (haystack, needle) =>
     (haystack || '').toLowerCase().includes((needle || '').toLowerCase());
 
+  // ⏱️ Time cutoff (supports '7d', '30d', and 'all')
   const cutoffDate = useMemo(() => {
     if (timePreset === 'all') return null;
+    const days = parseInt(timePreset, 10);
+    if (!Number.isFinite(days)) return null;
     const d = new Date();
-    if (timePreset === '30d') d.setDate(d.getDate() - 30);
+    d.setDate(d.getDate() - days);
     return d;
   }, [timePreset]);
 
   const isAllIndustries = industrySelected.size === 0;
 
-  // 🔑 Ensure "All time" shows literally everything; time window never excludes "To Do"
+  // 🔑 Filters (NEVER time-exclude "To Do")
   const filtered = useMemo(() => {
     const subs = submissions.filter(s => {
       const sStatus = canonicalStatus(s.status);
 
       if (cutoffDate && sStatus !== 'To Do') {
-        if (s.submitted) {
-          const d = new Date(s.submitted);
-          if (!Number.isNaN(d.getTime()) && d < cutoffDate) return false;
-        } else {
-          return false;
-        }
+        const subDate = s.submitted ? new Date(s.submitted) : null;
+        if (!subDate || Number.isNaN(subDate.getTime()) || subDate < cutoffDate) return false;
       }
 
       if (advisor !== 'All' && (s.pickedBy || '').trim() !== advisor) return false;
@@ -353,8 +561,7 @@ export default function AdminStatistics() {
   // Charts
   const getIndustryChartData = () => {
     const counts = filtered.subs.reduce((acc, s) => {
-      const k = (s.industry || '').trim();
-      if (!k) return acc;
+      const k = (s.industry || '').trim() || 'Unknown';
       acc[k] = (acc[k] || 0) + 1;
       return acc;
     }, {});
@@ -375,6 +582,10 @@ export default function AdminStatistics() {
       acc[c] = (acc[c] || 0) + 1;
       return acc;
     }, {});
+
+    // Ensure all buckets exist so "To Do" shows even if 0 after filters
+    ['To Do','In Progress','Done','Canceled'].forEach(k => { if (!(k in counts)) counts[k] = 0; });
+
     const labels = Object.keys(counts);
     return {
       labels,
@@ -384,7 +595,7 @@ export default function AdminStatistics() {
 
   const getSubmissionTrendData = () => {
     const dateCounts = filtered.subs.reduce((acc, s) => {
-      if (!s.submitted) return acc; // items without a date won't chart (intended)
+      if (!s.submitted) return acc;
       const d = new Date(s.submitted);
       if (Number.isNaN(d.getTime())) return acc;
       const key = d.toLocaleDateString();
@@ -448,7 +659,7 @@ export default function AdminStatistics() {
     return (
       <div className="modal-overlay" onClick={() => setShowModal(false)}>
         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-          <button className="close-btn" onClick={() => setShowModal(false)}>&times;</button>
+          <button className="close-btn" onClick={() => setShowModal(false)} aria-label="Close modal">&times;</button>
           <h2 style={{ marginBottom: '16px' }}>{selectedMetric.toUpperCase()}</h2>
           <div style={{ maxHeight: '400px', overflowY: 'auto' }}>{content}</div>
         </div>
@@ -464,7 +675,7 @@ export default function AdminStatistics() {
     setIndustrySelected(new Set());
   };
 
-  const industryLabel = isAllIndustries
+  const industryLabel = industrySelected.size === 0
     ? 'All industries'
     : `${industrySelected.size} selected`;
 
@@ -484,10 +695,12 @@ export default function AdminStatistics() {
             title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             onClick={toggleTheme}
           >
-            {theme === 'dark' ? '☀️' : '🌙'}
+            {theme === 'dark' ? <IconSun /> : <IconMoon />}
           </button>
 
-          <a href="/admin-dashboard" className="stats-btn">← Back to Dashboard</a>
+          <a href="/admin-dashboard" className="stats-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <IconChevronLeft /> Back to Dashboard
+          </a>
         </div>
       </header>
 
@@ -518,11 +731,9 @@ export default function AdminStatistics() {
             {/* 2) Filters ABOVE the charts */}
             <div className="admin-toolbar stats-toolbar">
               <div className="toolbar-left">
-
-
                 {/* Advisor type-ahead */}
                 <div className="filter-chip">
-                  <span className="icon">👤</span>
+                  <IconUser className="icon" />
                   <input
                     list="advisor-list"
                     className="filter-select"
@@ -543,12 +754,13 @@ export default function AdminStatistics() {
 
                 {/* Time select */}
                 <div className="filter-chip">
-                  <span className="icon">🕒</span>
+                  <IconClock className="icon" />
                   <select
                     className="filter-select"
                     value={timePreset}
                     onChange={(e) => setTimePreset(e.target.value)}
                   >
+                    <option value="7d">Last 7 days</option>
                     <option value="30d">Last 30 days</option>
                     <option value="all">All time</option>
                   </select>
@@ -557,7 +769,7 @@ export default function AdminStatistics() {
 
                 {/* Industry multi-select dropdown */}
                 <div className="filter-chip" ref={industryMenuRef}>
-                  <span className="icon">⛃</span>
+                  <IconFilter className="icon" />
                   <button
                     type="button"
                     className="multi-toggle"
@@ -574,11 +786,8 @@ export default function AdminStatistics() {
                       <label className="multi-item">
                         <input
                           type="checkbox"
-                          checked={isAllIndustries}
-                          onChange={(e) => (e.target.checked
-                            ? setIndustrySelected(new Set())
-                            : setIndustrySelected(new Set())
-                          )}
+                          checked={industrySelected.size === 0}
+                          onChange={() => setIndustrySelected(new Set())}
                         />
                         <span>All industries</span>
                       </label>
@@ -646,18 +855,18 @@ export default function AdminStatistics() {
             {/* 3) Charts */}
             <div className="side-by-side-charts">
               <div className="chart-wrapper">
-                <h3>Top Industries</h3>
-                <Pie data={getIndustryChartData()} />
+                <h3 className="chart-title"><IconPie className="svg-icon" /> Top Industries</h3>
+                <Pie key={`pie-${chartKey}`} data={getIndustryChartData()} options={pieOptions} />
               </div>
               <div className="chart-wrapper">
-                <h3>Status Distribution</h3>
-                <Bar data={getStatusBarData()} />
+                <h3 className="chart-title"><IconBars className="svg-icon" /> Status Distribution</h3>
+                <Bar key={`bar-${chartKey}`} data={getStatusBarData()} options={commonXYOptions} />
               </div>
             </div>
 
             <div className="chart-wrapper">
-              <h3>Submission Trends</h3>
-              <Line data={getSubmissionTrendData()} />
+              <h3 className="chart-title"><IconTrend className="svg-icon" /> Submission Trends</h3>
+              <Line key={`line-${chartKey}`} data={getSubmissionTrendData()} options={commonXYOptions} />
             </div>
 
             {/* 4) Activity Center */}
