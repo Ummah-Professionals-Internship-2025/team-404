@@ -1,26 +1,48 @@
 // src/components/FollowUp.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 
 import "../App.css";
-import "./FollowUpExact.css";           // keep filename
 import logo from "../assets/white-horizontal.png";
+import filter_icon from '../assets/filter_icon.svg';
+import search_icon from '../assets/search_icon.svg';
+import light_mode_icon from '../assets/light_mode.svg';
+import dark_mode_icon from '../assets/dark_mode.svg';
 import Sidebar from "./Sidebar";
+import FollowUpModal from "./FollowUpModal";
 
 export default function FollowUp() {
   const [doneSubmissions, setDoneSubmissions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProfession, setSelectedProfession] = useState("");
   const [mentorEmail, setMentorEmail] = useState("");
-  const [pickedDate, setPickedDate] = useState(null);
-  const [pickedTime, setPickedTime] = useState("");
   const navigate = useNavigate();
 
-  // --- data fetch (unchanged) ---
+  // Theme state (same as dashboard)
+  const [theme, setTheme] = useState(() => {
+    try {
+      const saved = localStorage.getItem('dashboardTheme');
+      if (saved === 'light' || saved === 'dark') return saved;
+      if (typeof window !== 'undefined' && window.matchMedia) {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+    } catch {}
+    return 'light';
+  });
+  
+  const toggleTheme = () => {
+    setTheme((t) => {
+      const next = t === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem('dashboardTheme', next); } catch {}
+      return next;
+    });
+  };
+
+  // --- data fetch with loading state ---
   useEffect(() => {
+    setLoading(true);
     fetch("http://localhost:5050/api/followup")
       .then((res) => res.json())
       .then((data) => {
@@ -30,7 +52,8 @@ export default function FollowUp() {
         const filtered = data.filter((item) => !deletedIds.includes(item.id));
         setDoneSubmissions(filtered);
       })
-      .catch((err) => console.error("Error fetching follow-ups:", err));
+      .catch((err) => console.error("Error fetching follow-ups:", err))
+      .finally(() => setLoading(false));
   }, []);
 
   // store current mentor (if any)
@@ -38,7 +61,7 @@ export default function FollowUp() {
     setMentorEmail(sessionStorage.getItem("mentorEmail") || "");
   }, []);
 
-  // --- helpers (unchanged behavior) ---
+  // --- helpers for webmail ---
   function getWebmailUrl(email, subject, body) {
     const encodedSubject = encodeURIComponent(subject);
     const encodedBody = encodeURIComponent(body);
@@ -77,18 +100,25 @@ export default function FollowUp() {
       const cleanUrl = window.location.origin + window.location.pathname;
       window.history.replaceState({}, document.title, cleanUrl);
 
-      const subject =
-        "Follow-Up on Your Ummah Professionals Mentorship";
+      const subject = "Follow-Up on Your Ummah Professionals Mentorship";
       const body = `Hi ${studentName},\n\nI hope you're doing well! I'm following up to see if you'd like a second mentorship session.\nIf you're interested, let me know and we can schedule a new meeting.\n\n- ${
         emailParam || mentorEmail
       }`;
       const url = getWebmailUrl(studentEmail, subject, body);
       setTimeout(() => window.open(url, "_blank"), 400);
     }
-  }, []); // run once
+  }, []);
 
   // Soft delete (UI only)
   const handleSoftDelete = (id) => {
+    // Find the submission to get the name for confirmation
+    const submission = doneSubmissions.find(item => item.id === id);
+    const name = submission?.name || 'this meeting';
+    
+    if (!window.confirm(`Are you sure you want to delete ${name}? This will hide it from the list.`)) {
+      return;
+    }
+    
     setDoneSubmissions((prev) => prev.filter((item) => item.id !== id));
     const deletedIds = JSON.parse(
       localStorage.getItem("softDeletedFollowUps") || "[]"
@@ -102,22 +132,17 @@ export default function FollowUp() {
     }
   };
 
-  // ---------- presentation-only helpers ----------
+  // ---------- presentation helpers ----------
   const DAYS = ["Su", "M", "Tu", "W", "Th", "F", "Sa"];
-  const MORNING = ["7 AM", "8 AM", "9 AM", "10 AM", "11 AM"];
-  const AFTERNOON = ["12 PM", "1 PM", "2 PM", "3 PM", "4 PM"];
-  const EVENING = ["5 PM", "6 PM", "7 PM"];
-
-  const initials = (name = "") => (name.trim()[0] || "").toUpperCase();
 
   const renderAvailabilityChips = (value) => {
     const raw = Array.isArray(value) ? value.join(",") : String(value || "");
     return (
-      <div className="wkdays wkdays--sheet">
+      <div className="wkdays wkdays--dash">
         {DAYS.map((d) => {
           const on = raw.toLowerCase().includes(d.toLowerCase());
           return (
-            <span key={d} className={`dayChip ${on ? "on" : "off"}`}>
+            <span key={d} className={`day ${on ? "on" : "off"}`}>
               {d}
             </span>
           );
@@ -126,7 +151,6 @@ export default function FollowUp() {
     );
   };
 
-  // Show industry exactly like screenshot: first item + “+n”
   const splitIndustry = (val) => {
     if (!val) return { primary: "—", extra: 0 };
     if (Array.isArray(val))
@@ -138,7 +162,18 @@ export default function FollowUp() {
     return { primary: parts[0] || "—", extra: Math.max(0, parts.length - 1) };
   };
 
-  const visibleRows = doneSubmissions.filter(
+  const renderIndustryPills = (industry) => {
+    const { primary, extra } = splitIndustry(industry);
+    return (
+      <>
+        <span className="pill-blue">{primary}</span>
+        {extra > 0 && <span className="pill-extra">+{extra}</span>}
+      </>
+    );
+  };
+
+  // Only calculate visibleRows when not loading to improve performance
+  const visibleRows = loading ? [] : doneSubmissions.filter(
     (item) =>
       (!searchQuery ||
         item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -148,27 +183,12 @@ export default function FollowUp() {
       (!selectedProfession || item.industry === selectedProfession)
   );
 
-  function combineDateAndTime(date, label) {
-    if (!date || !label) return null;
-    const [num, ap] = label.split(" ");
-    let h = parseInt(num, 10);
-    if (ap === "PM" && h !== 12) h += 12;
-    if (ap === "AM" && h === 12) h = 0;
-    const d = new Date(date);
-    d.setHours(h, 0, 0, 0);
-    return d;
-  }
-
-  function handleProposeMeeting() {
-    const dt = combineDateAndTime(pickedDate, pickedTime);
-    if (!dt) {
-      alert("Please select a date and a time.");
-      return;
-    }
+  // Handle propose meeting from modal
+  const handleProposeMeeting = (dateTime) => {
     if (!selected) return;
 
     sessionStorage.setItem("studentId", selected.id);
-    sessionStorage.setItem("meetingTime", dt.toISOString());
+    sessionStorage.setItem("meetingTime", dateTime.toISOString());
     sessionStorage.setItem("fromFollowUp", "true");
 
     const me = sessionStorage.getItem("mentorEmail") || mentorEmail;
@@ -177,29 +197,57 @@ export default function FollowUp() {
       return;
     }
     window.location.href = `http://localhost:5173/schedule-confirm?email=${me}`;
-  }
-
-  const resetSheetState = () => {
-    setPickedDate(null);
-    setPickedTime("");
   };
 
-  return (
-    <div className="followup-page">
-      {/* Gradient header */}
-      <header className="fu-header">
-        <img src={logo} alt="Ummah Professionals" className="fu-logo" />
-        <h1 className="fu-title">Follow-Up</h1>
 
-        <div className="fu-sidebar-anchor">
-          <Sidebar />
+  return (
+    <div className={`app-container ${theme === 'dark' ? 'theme-dark' : ''}`}>
+      {/* Use same header styling as dashboard */}
+      <header className="app-header">
+        <div className="main-header">
+          <div className="admin-header-left">
+            <img src={logo} alt="Ummah Professionals" className="logo" />
+          </div>
+
+          <h1>Follow-Up</h1>
+
+          <div className="admin-header-right">
+            {/* Theme toggle */}
+            <button
+              className="theme-toggle"
+              aria-label="Toggle dark mode"
+              aria-pressed={theme === 'dark'}
+              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              onClick={toggleTheme}
+            >
+              <img 
+                src={theme === 'dark' ? light_mode_icon : dark_mode_icon}
+                alt={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+                width="30"
+                height="27.5"
+              />
+            </button>
+
+            <div className="sidebar-anchor">
+              <Sidebar theme={theme} />
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* Search + Filter */}
-      <div className="fu-filters">
-        <div className="fu-search">
-          <span className="icon-magnifier" aria-hidden="true" />
+      {/* Use same filter controls as dashboard */}
+      <div className="filter-controls">
+        <div className="toolbar-left">
+          {/* Search pill */}
+          <div className="search-pill">
+            <img 
+              src={search_icon} 
+              alt="Search" 
+              className="search-icon"
+              onClick={() => {
+                document.querySelector('.search-pill input').focus();
+              }}
+            />
           <input
             type="text"
             placeholder="Search"
@@ -208,346 +256,156 @@ export default function FollowUp() {
           />
         </div>
 
-        <div className="fu-select">
-          <svg className="icon-funnel" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M3 5h18l-7 8v5l-4 2v-7L3 5z" fill="currentColor" />
-          </svg>
+          {/* Filter dropdown pill */}
+          <div className="filter-pill">
+            <img 
+              src={filter_icon} 
+              alt="Filter" 
+              className="filter-icon"
+              onClick={() => {
+                document.querySelector('.filter-pill select').click();
+              }}
+            />
           <select
             value={selectedProfession}
             onChange={(e) => setSelectedProfession(e.target.value)}
-            aria-label="Filter by Profession"
           >
             <option value="">Filter by Profession</option>
-            {[...new Set(doneSubmissions.map((s) => s.industry).filter(Boolean))].map(
-              (ind) => (
-                <option key={ind} value={ind}>
-                  {ind}
+              {loading ? [] : [...new Set(doneSubmissions.map((s) => s.industry).filter(Boolean))].map((industry) => (
+                <option key={industry} value={industry}>
+                  {industry}
                 </option>
-              )
-            )}
+              ))}
           </select>
-          <svg className="icon-chev" viewBox="0 0 24 24" aria-hidden="true">
-            <path
-              d="M7 10l5 5 5-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
+            <svg 
+              className="chevron-icon" 
+              viewBox="0 0 20 20" 
+              fill="currentColor"
+              onClick={() => {
+                document.querySelector('.filter-pill select').click();
+              }}
+            >
+              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
           </svg>
+          </div>
         </div>
       </div>
 
-      {/* Column headers */}
-      <div className="fu-columns">
-        <div className="col name">
-          NAME <i />
+      <div className="content-container">
+        {/* Column headers using same structure as dashboard */}
+        <div className="dash-card header-card">
+          <div className="card-content">
+            <div className="dash-col-left">
+              <div className="header-text">NAME</div>
+            </div>
+            <div className="dash-col-avail">
+              <div className="header-text">AVAILABILITY</div>
+            </div>
+            <div className="dash-col-industry">
+              <div className="header-text">INDUSTRY</div>
+            </div>
+            <div className="dash-col-picked">
+              <div className="header-text">STATUS</div>
+            </div>
+            <div className="dash-col-status">
+              <div className="header-text">ACTIONS</div>
         </div>
-        <div className="col avail">
-          AVAILIBILITY <i />
-        </div>
-        <div className="col industry">
-          INDUSTRY <i />
         </div>
       </div>
 
-      {/* List */}
-      <div className="fu-list">
+        {/* List using dashboard card styling */}
+        {loading ? (
+          <p className="status-text">Loading submissions...</p>
+        ) : (
+          <div className="submissions-grid">
         {visibleRows.length === 0 && (
-          <div className="fu-empty">No completed meetings yet.</div>
+              <p className="status-text">No completed meetings yet.</p>
         )}
 
-        {visibleRows.map((item) => {
-          const { primary, extra } = splitIndustry(item.industry);
-          return (
+          {visibleRows.map((item) => (
             <div
               key={item.id}
-              className="fu-row"
-              onClick={() => {
-                setSelected(item);
-                resetSheetState();
-              }}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) =>
-                e.key === "Enter" ? (setSelected(item), resetSheetState()) : null
-              }
+              className="dash-card"
+              onClick={() => setSelected(item)}
             >
-              {/* Left */}
-              <div className="fu-left">
-                <div className="avatar">{initials(item.name)}</div>
-                <div className="who">
-                  <div className="who-name">{item.name}</div>
-                  <div className="who-email">{item.email}</div>
+              <div className="card-content">
+                {/* Left column: Name and Email */}
+                <div className="dash-col-left">
+                  <div className="dash-name">{item.name}</div>
+                  <div className="dash-email">{item.email}</div>
                 </div>
-                <span className="done-pill">DONE</span>
+
+                {/* Availability column */}
+                <div className="dash-col-avail">
+                  {renderAvailabilityChips(item.availability)}
               </div>
 
-              {/* Middle */}
-              <div className="fu-mid">
-                <div className="wkdays">
-                  {DAYS.map((d) => {
-                    const on = String(item.availability || "")
-                      .toLowerCase()
-                      .includes(d.toLowerCase());
-                    return (
-                      <span key={d} className={`day ${on ? "on" : "off"}`}>
-                        {d}
-                      </span>
-                    );
-                  })}
-                </div>
+                {/* Industry column */}
+                <div className="dash-col-industry">{renderIndustryPills(item.industry)}</div>
+
+                {/* Status column */}
+                <div className="dash-col-picked">
+                  <div 
+                    className="status-tag" 
+                    style={theme === 'dark' ? { backgroundColor: '#0f2f22', color: '#86efac' } : { backgroundColor: '#DCFEE7', color: '#17803D' }}
+                  >
+                    DONE
+                  </div>
               </div>
 
-              {/* Right */}
-              <div className="fu-right">
-                <div className="industry-pill">{primary}</div>
-                {extra > 0 && <div className="extra-count">+{extra}</div>}
-                <button
-                  className="delete-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSoftDelete(item.id);
-                  }}
-                  aria-label={`Delete ${item.name}`}
-                >
-                  DELETE
-                </button>
+                {/* Actions column */}
+                <div className="dash-col-status" style={{ display: 'flex', gap: '10px', flexDirection: 'row-reverse' }}>
+                  <button
+                    className="delete-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSoftDelete(item.id);
+                    }}
+                  >
+                    DELETE
+                  </button>
+                  <button
+                    className="message-btn"
+                    style={{
+                      background: '#024B6E',
+                      color: '#fff',
+                      boxShadow: '0 10px 22px rgba(2,75,110,0.35)',
+                      borderRadius: '18px',
+                      padding: '12px 18px',
+                      fontWeight: '700',
+                      letterSpacing: '.2px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'transform .15s ease, filter .15s ease',
+                      userSelect: 'none'
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const subject = "Follow-Up on Your Ummah Professionals Mentorship";
+                      const body = `Hi ${item.name},\n\nI hope you're doing well! I'm following up to see if you'd like a second mentorship session.\nIf you're interested, let me know and we can schedule a new meeting.\n\n- ${mentorEmail}`;
+                      const url = getWebmailUrl(item.email, subject, body);
+                      window.open(url, "_blank");
+                    }}
+                  >
+                    MESSAGE
+                  </button>
+                </div>
               </div>
             </div>
-          );
-        })}
-      </div>
+          ))}
+                    </div>
+                  )}
+                </div>
 
-      {/* Big Scheduler Sheet */}
+      {/* Use the new DashboardModal-based modal */}
       {selected && (
-        <div
-          className="fu-sheet-backdrop"
-          onClick={() => setSelected(null)}
-        >
-          <div className="fu-sheet" onClick={(e) => e.stopPropagation()}>
-            <button className="fu-x" onClick={() => setSelected(null)} aria-label="Close">
-              ×
-            </button>
-
-            {/* Sheet header */}
-            <div className="fu-sheet-head">
-              <h2 className="fu-student-name">
-                {selected.name || "Student"}
-              </h2>
-
-              <div className="fu-status">
-                <div className="status-box">
-                  <span>IN PROGRESS</span>
-                  <svg viewBox="0 0 24 24" className="chev">
-                    <path
-                      d="M7 10l5 5 5-5"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            {/* Body grid */}
-            <div className="fu-sheet-body">
-              {/* LEFT: student info */}
-              <aside className="sheet-left">
-                <div className="pill-row">
-                  <div className="pill-lite">
-                    {selected.academicStanding || "Graduated"}
-                  </div>
-                  {selected.industry && (
-                    <div className="pill-wide">
-                      {selected.industry}
-                    </div>
-                  )}
-                </div>
-
-                <section className="info-card">
-                  <div className="label">Email</div>
-                  <div className="value">{selected.email || "—"}</div>
-
-                  <div className="label">Phone</div>
-                  <div className="value">{selected.phone || "—"}</div>
-                </section>
-
-                <section className="info-card">
-                  <div className="label">Looking For</div>
-                  <div className="value">{selected.lookingFor || "—"}</div>
-
-                  <div className="label">Resume</div>
-                  <div className="value">
-                    {selected.resume ? (
-                      <a
-                        className="linkish"
-                        href={selected.resume}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        View resume
-                      </a>
-                    ) : (
-                      "—"
-                    )}
-                  </div>
-
-                  <div className="label">How They Heard</div>
-                  <div className="value">{selected.howTheyHeard || "—"}</div>
-                </section>
-
-                {selected.otherInfo && (
-                  <section className="info-card">
-                    <div className="label">Comments</div>
-                    <div className="value">{selected.otherInfo}</div>
-                  </section>
-                )}
-
-                <section className="avail-card">
-                  <div className="label big">Student Availability:</div>
-                  {renderAvailabilityChips(selected.availability)}
-
-                  <div className="tod">
-                    <span
-                      className={`tod-chip ${
-                        String(selected.timeline || "")
-                          .toLowerCase()
-                          .includes("morning")
-                          ? "on"
-                          : ""
-                      }`}
-                    >
-                      Morning
-                    </span>
-                    <span
-                      className={`tod-chip ${
-                        String(selected.timeline || "")
-                          .toLowerCase()
-                          .includes("afternoon")
-                          ? "on"
-                          : ""
-                      }`}
-                    >
-                      Afternoon
-                    </span>
-                    <span
-                      className={`tod-chip ${
-                        String(selected.timeline || "")
-                          .toLowerCase()
-                          .includes("evening")
-                          ? "on"
-                          : ""
-                      }`}
-                    >
-                      Evening
-                    </span>
-                  </div>
-                </section>
-
-                {selected.submitted && (
-                  <div className="submitted-note">
-                    submitted: {selected.submitted}
-                  </div>
-                )}
-              </aside>
-
-              {/* RIGHT: calendar & time chips */}
-              <section className="sheet-right">
-                <h3 className="right-title">Select a Date &amp; Time:</h3>
-
-                <div className="cal-card">
-                  <DatePicker
-                    selected={pickedDate}
-                    onChange={(d) => setPickedDate(d)}
-                    inline
-                    calendarClassName="fu-datepicker"
-                    nextMonthButtonLabel="›"
-                    previousMonthButtonLabel="‹"
-                  />
-                </div>
-
-                <div className="times-card">
-                  <div className="times-row">
-                    <div className="times-label">Morning:</div>
-                    <div className="times-chips">
-                      {MORNING.map((t) => (
-                        <button
-                          key={t}
-                          className={`time-chip ${
-                            pickedTime === t ? "active" : ""
-                          }`}
-                          onClick={() => setPickedTime(t)}
-                        >
-                          {t}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="times-row">
-                    <div className="times-label">Afternoon:</div>
-                    <div className="times-chips">
-                      {AFTERNOON.map((t) => (
-                        <button
-                          key={t}
-                          className={`time-chip ${
-                            pickedTime === t ? "active" : ""
-                          }`}
-                          onClick={() => setPickedTime(t)}
-                        >
-                          {t}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="times-row">
-                    <div className="times-label">Evening:</div>
-                    <div className="times-chips">
-                      {EVENING.map((t) => (
-                        <button
-                          key={t}
-                          className={`time-chip ${
-                            pickedTime === t ? "active" : ""
-                          }`}
-                          onClick={() => setPickedTime(t)}
-                        >
-                          {t}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="selected-row">
-                  <div className="sel-label">Selected Time:</div>
-                  <div className="sel-pills">
-                    <span className="sel-pill">
-                      {pickedDate ? pickedDate.toLocaleDateString() : "—/—/—"}
-                    </span>
-                    <span className="sel-pill">{pickedTime || "—:—"}</span>
-                  </div>
-                </div>
-
-                <button className="propose-cta" onClick={handleProposeMeeting}>
-                  PROPOSE MEETING
-                </button>
-
-                <div className="login-hint">
-                  {mentorEmail ? (
-                    <>
-                      You are logged in as <strong>{mentorEmail}</strong>.
-                    </>
-                  ) : (
-                    <>You will be prompted to sign in with Google before sending.</>
-                  )}
-                </div>
-              </section>
-            </div>
-          </div>
+        <div className="modal-overlay" onClick={() => setSelected(null)}>
+          <FollowUpModal
+            student={selected}
+            onClose={() => setSelected(null)}
+            theme={theme}
+            onProposeMeeting={handleProposeMeeting}
+          />
         </div>
       )}
     </div>

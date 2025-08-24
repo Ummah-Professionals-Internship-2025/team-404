@@ -1,0 +1,92 @@
+/* FollowUpModal.css - Specific styling for Follow-Up modal */
+
+/* Import the base modal styles from DashboardModal */
+@import './DashboardModal.css';
+
+/* Follow-Up modal specific overrides and additions */
+.followup-modal {
+  /* Add any Follow-Up specific styling here */
+}
+
+/* ============================
+   FOLLOW-UP MODAL SCROLLING - HIDE SCROLLBARS
+   ============================ */
+
+/* Inherit scrollbar hiding from base modal, but ensure it applies */
+.followup-modal,
+.followup-modal .modal-left,
+.followup-modal .modal-right {
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.followup-modal::-webkit-scrollbar,
+.followup-modal .modal-left::-webkit-scrollbar,
+.followup-modal .modal-right::-webkit-scrollbar {
+  display: none; /* WebKit browsers */
+}
+
+/* Ensure dark mode follow-up modal scrollbars are also hidden */
+.theme-dark .followup-modal,
+.theme-dark .followup-modal *,
+.theme-dark .followup-modal .modal-left,
+.theme-dark .followup-modal .modal-right,
+.theme-dark .followup-modal .modal-left *,
+.theme-dark .followup-modal .modal-right * {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* Internet Explorer 10+ */
+}
+
+.theme-dark .followup-modal::-webkit-scrollbar,
+.theme-dark .followup-modal *::-webkit-scrollbar,
+.theme-dark .followup-modal .modal-left::-webkit-scrollbar,
+.theme-dark .followup-modal .modal-right::-webkit-scrollbar,
+.theme-dark .followup-modal .modal-left *::-webkit-scrollbar,
+.theme-dark .followup-modal .modal-right *::-webkit-scrollbar {
+  display: none !important; /* WebKit browsers */
+}
+
+/* Follow-Up modal header customizations */
+.followup-modal .modal-header {
+  /* Header specific to Follow-Up modal */
+}
+
+/* Follow-Up modal content customizations */
+.followup-modal .modal-grid {
+  /* Grid layout specific to Follow-Up modal */
+}
+
+/* Follow-Up modal buttons */
+.followup-modal .propose-meeting-btn {
+  /* Propose meeting button styling */
+}
+
+.followup-modal .send-message-btn {
+  /* Send message button styling */
+}
+
+/* Dark mode overrides for Follow-Up modal */
+.theme-dark .followup-modal {
+  /* Dark mode specific styles */
+}
+
+.theme-dark .followup-modal .modal-header {
+  /* Dark mode header styles */
+}
+
+/* Follow-Up modal specific animations */
+@keyframes followupModalSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.followup-modal {
+  animation: followupModalSlide 0.3s ease-out;
+}

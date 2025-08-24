@@ -1,0 +1,1289 @@
+.modal-content.modal-scheduler {
+    width: 95%;
+    max-width: 55rem;
+    max-height: 95vh;
+    padding: 1.9rem;
+    border-radius: 35px;
+    /*overflow-y: hidden; */
+  }
+  
+  .modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  
+  .modal-left {
+    border-right: 3px solid #f4f4f6;
+    padding-right: 20px;
+    padding-left: 0px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.95rem; /*gap throughout the left panel */
+  }
+  
+  .modal-right {
+    padding-right: 0px;
+    padding-left: 0px;
+    padding-top: 0.8rem;
+    width: 100%;
+    max-width: none; /* constrain right-side container */
+    justify-self: start; /* keep it centered within grid */
+  }
+  
+  
+  .student-header {
+    display: flex;
+    flex-direction: column;
+    margin-top: 12px; /* Add space from header border */
+    margin-bottom: 1px; /* was 16px */
+  }
+  
+  .student-pills {
+    display: flex;
+    gap: 4px; /* was 12px */
+    flex-wrap: wrap;
+  }
+  
+  .pill-academic,
+  .pill-industry {
+    background: #e6f4fd;
+    color: #007CA6;
+    border-radius: 14px; /* was 20px */
+    padding: 6px 12px; /* was 10px 18px */
+    font-weight: 600;
+    font-size: 13px; /* was 14px */
+  }
+  
+  .info-section {
+    background: #f4f4f4;
+    border-radius: 20px;
+    padding: 12px; /* was 16px */
+    margin-bottom: 0px; /* was 12px */
+    margin-top: 0px; /* was 12px */
+  }
+  
+  .section-title {
+    display: none;
+  }
+  
+  .info-row {
+    display: grid;
+    grid-template-columns: 0.5fr 1.2fr; /* was 120px */
+    gap: 2px; /* was 16px */
+    margin-bottom: 6px; /* was 8px */
+    align-items: center;
+  }
+  
+  .info-row:last-child {
+    margin-bottom: 0;
+  }
+  
+  .info-label {
+    color: #497585;
+    font-weight: 600;
+    font-size: 13px; /* was 14px */
+    align-items: center;
+    padding-left: 0.3rem;
+  }
+  
+  .info-value {
+    background: #fff;
+    color: #374151;
+    font-weight: 500;
+    font-size: 13px;
+    padding: 10px 13px;
+    border-radius: 16px;
+    word-break: break-word;
+    border: 1px solid #E5E7EB;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-width: 0;
+  }
+  
+  .info-value-text {
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-right: 4px;
+  }
+  
+  .info-value-text::-webkit-scrollbar {
+    height: 0px; /* change this so scrollbar is visible*/
+  }
+  
+  .info-value-text::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .submitted-note {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+    padding: 5px 11px;
+    margin-top: 4px;
+    text-align: center;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    max-width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .info-value-text::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 1px;
+  }
+  
+  .info-value-text::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+  }
+  
+  .info-value a {
+    color: #007CA6;
+    text-decoration: underline;
+    font-weight: 600;
+  }
+  
+  .info-value a:hover {
+    text-decoration: none;
+  }
+  
+  .copy-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #6B7280;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+  }
+  
+  .copy-btn:hover {
+    background-color: #F3F4F6;
+    color: #374151;
+  }
+  
+  .copy-btn:active {
+    transform: scale(0.95);
+  }
+  
+  .comments-section {
+    background: #f4f4f4;
+    border-radius: 20px;
+    padding: 12px; /* was 16px */
+    margin-top: 0px; /* was 12px */
+    margin-bottom: 0px; /* was 12px */
+    max-height: 180px; /* was 120px */
+    overflow-y: auto;
+  }
+  
+  
+  .comments-section .info-value {
+    line-height: 1.2;
+    color: #374151;
+    background: transparent; /* Change from #fff to transparent */
+    border: 2px solid #E5E7EB; /* Remove the border */
+    border-radius: 7px;
+    padding: 5px;
+    max-height: 60px;
+    overflow-y: auto;
+    display: block;
+  }
+  
+  .comments-clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .comments-clickable:hover {
+    background-color: #F3F4F6 !important;
+    border-color: #D1D5DB;
+  }
+  
+  /* Comments Popup Modal */
+  .comments-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  .comments-popup {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .comments-popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    padding-top: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #E5E7EB;
+    background-color: #F9FAFB;
+  }
+  
+  .comments-popup-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1F2937;
+  }
+  
+  .comments-popup-close {
+    background: none;
+    border: none;
+    font-size: 19px;
+    color: #6B7280;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    width: 26px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .comments-popup-close:hover {
+    background-color: #F3F4F6;
+    color: #374151;
+  }
+  
+  .comments-popup-content {
+    padding: 24px;
+    padding-top: 17px;
+    overflow-y: auto;
+    line-height: 1.6;
+    color: #374151;
+    font-size: 14px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  
+
+  
+  .comments-section::before {
+    content: "Other Info";
+    display: block;
+    color: #497585;
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 5px;
+    padding-left: 0.3rem;
+  }
+  
+  .avail-card {
+    background: #F4F4F4;
+    border-radius: 15px; /* was 18px */
+    padding: 10px 10px; /* was 10px 12px */
+    border: none;
+    margin-top: -2px; /* was 10px */
+    margin-bottom: -0.6rem; /* was 10px */
+  }
+  
+  .avail-card .label.big {
+    font-weight: 600;
+    font-size: 13px;
+    color: #497585;
+    margin-left: 0.4rem;
+    margin-bottom: 8px; /* was 8px */
+  }
+  
+  /* Grid layout: Days as columns, periods as rows */
+  .avail-matrix {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.2rem; /* MIND THA GAP*/
+    max-width: 100%;
+    overflow: hidden;
+  }
+  
+  .avail-day-header {
+    font-weight: 700;
+    color: #003F55;
+    font-size: 10px;
+    text-align: center;
+    padding: 2px 1px;
+  }
+  
+  .avail-chip {
+    height: 1.5rem;
+    width: 3rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 8px;
+    white-space: nowrap;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    max-width: 100%;
+  }
+  
+  .avail-chip.on {
+    background: #EFFDF4;
+    border: 2px solid #7EF2A9;
+    color: #0C0D0C;
+  }
+  
+  .avail-chip.off {
+    background: #ebedef;
+    border: 2px solid rgb(191, 203, 219);
+    color: #9aa4b2;
+  }
+  
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0px; /* Remove gap to connect with vertical line */
+    padding-bottom: 10px;
+    border-bottom: 3px solid #f4f4f6;
+  }
+  
+  .modal-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .back-arrow {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #374151;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+  }
+  
+  .back-arrow:hover {
+    background-color: #F3F4F6;
+  }
+  
+  .modal-student-name {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 0;
+  }
+  
+  .status-dropdown {
+    position: relative;
+  }
+  
+  .status-dropdown select {
+    appearance: none;
+    background: #F9FAFB;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    padding: 8px 32px 8px 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    min-width: 120px;
+  }
+
+  .status-dropdown select:focus {
+    outline: none; /* Remove browser default */
+  }
+  
+  /* Remove old text arrow and use chevron SVG */
+  .status-dropdown::after { content: none; }
+  
+  .status-chevron {
+    position: absolute;
+    right: 0.8rem;
+    top: 50%;
+    width: 0.6rem;
+    height: 0.6rem;
+    transform: translateY(-50%);
+    pointer-events: none;
+    /* Use mask so we can tint the asset via currentColor */
+    background-color: currentColor;
+    -webkit-mask: url('../assets/chevron.svg') no-repeat center / contain;
+    mask: url('../assets/chevron.svg') no-repeat center / contain;
+  }
+  
+  /* Color the chevron per status */
+  .status-dropdown-to-do .status-chevron { color: #1D40B0; }
+  .status-dropdown-in-progress .status-chevron { color: #92400D; }
+  .status-dropdown-done .status-chevron { color: #17803D; }
+  
+  /* Status-specific styling for the dropdown */
+  .status-select-to-do {
+    background: #DBE9FE !important;
+    color: #1D40B0 !important;
+    border-color: #3B82F6 !important;
+  }
+  
+  .status-select-in-progress {
+    background: #FEF9C3 !important;
+    color: #92400D !important;
+    border-color: #F59E0B !important;
+  }
+  
+  .status-select-done {
+    background: #DCFEE7 !important;
+    color: #17803D !important;
+    border-color: #16A34A !important;
+  }
+  
+  
+  /* Available (PREVIOUSLY PREFERRED) Dates section */
+  .available-dates-card {
+    background: #fff;
+    border-radius: 20px;
+    border: 1px solid #EEF0F3;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    padding: 8px 12px;
+    margin-bottom: 2px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    max-width: 26rem;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 0.2rem;
+  }
+  
+  .available-dates-label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 15px;
+  }
+  
+  .available-dates-value {
+    color: #007CA6;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  
+  .calendar-card {
+    background: #fff;
+    border-radius: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    padding: 1.2rem; /* slightly tighter */
+    border: 1px solid #EEF0F3;
+    max-width: 26rem; /* shrink calendar container */
+    margin: 0 auto; /* center within right panel */
+  }
+  
+  /* Updated calendar styling to match Figma */
+  .react-calendar {
+    width: 100%; /* fill the smaller container */
+    border: none;
+    font-family: inherit;
+  }
+  
+  .react-calendar__navigation {
+    display: flex;
+    height: 40px;
+    margin-bottom: 0.8em;
+  }
+  
+  .react-calendar__navigation button {
+    min-width: 44px;
+    background: none;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    color: #374151;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 18px; /* Add rounded corners */
+    margin: 0 4px;
+    padding: 1px 12px;
+  }
+  
+  /* Hover effect */
+  .react-calendar__navigation button:hover {
+    background-color: #F3F4F6 !important;  /* Light gray background on hover */
+    color: #1F2937;  /* Darker text on hover */
+  }
+  
+  /* Active/clicked state */
+  .react-calendar__navigation button:active {
+    background-color: #F3F4F6 !important;  /* Slightly darker on click */
+    transform: translateY(1px);  /* Subtle press effect */
+  }
+  
+  .react-calendar__navigation button:focus {
+    background-color: #F3F4F6 !important;  /* Blue  when focused */
+  }
+  
+  
+  .react-calendar__navigation__label {
+    flex-grow: 1;
+    text-align: center;
+    font-weight: 600;
+    font-size: 16px;
+    color: #374151; /* Keep the text dark */
+    white-space: nowrap;
+    background: white !important; /* Add white background */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 18px; /* Add rounded corners */
+    padding: 8px 12px; /* Add some padding */
+  }
+  
+  
+  .react-calendar__month-view__weekdays {
+    text-align: center;
+    text-transform: none;
+    font-weight: 600;
+    font-size: 14px;
+    color:  #595F69;
+  }
+  
+  .react-calendar__month-view__weekdays__weekday {
+    padding: 0.5em;
+  }
+  
+  .react-calendar__tile {
+    max-width: 100%;
+    padding: 0.75rem 0.5rem;
+    background: #fff;
+    text-align: center;
+    line-height: 16px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    margin: 1px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s ease;
+  }
+  
+  /* Style for dates outside current month */
+  .react-calendar__month-view__days__day--neighboringMonth {
+    background-color: #ffffff !important;
+    color: #cacdd4 !important;
+    cursor: not-allowed;
+  }
+  
+  .react-calendar__tile--active {
+    background: #007CA6 !important;
+    color: white !important;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .react-calendar__tile:not(:disabled):hover,
+  .react-calendar__tile:not(:disabled):focus {
+    background-color: #BAE7FF;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  .react-calendar__tile:disabled {
+    background-color: #F1F5F9 !important;
+    color: #CBD5E1 !important;
+    cursor: not-allowed;
+    pointer-events: none;
+    box-shadow: none;
+    opacity: 0.5;
+  }
+
+  /* Override default react-calendar weekend red color - only for enabled current month dates */
+  .react-calendar__tile:enabled.react-calendar__month-view__days__day--weekend:not(.react-calendar__tile--active):not(.react-calendar__month-view__days__day--neighboringMonth) {
+    color: #374151 !important; /* Same as weekday color */
+  }
+
+  .react-calendar__tile:enabled.react-calendar__month-view__days__day--weekend:not(.react-calendar__tile--active):not(.react-calendar__month-view__days__day--neighboringMonth) abbr {
+    color: #374151 !important; /* Same as weekday color */
+  }
+  
+  
+  .times-card {
+    margin-top: 8px;
+    background: #fff;
+    border-radius: 20px;
+    border: 1px solid #EEF0F3;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    padding: 10px;
+    padding-bottom: 11px;
+    max-width: 26rem; /* Add this to match calendar width */
+    margin-left: auto; /* Add this to center it */
+    margin-right: auto; /* Add this to center it */
+    
+    position: relative;
+    z-index: 2;
+  }
+  
+  
+  .time-period-group {
+    margin-bottom: 6px;
+  }
+  
+  .time-period-group:last-child {
+    margin-bottom: 0;
+  }
+  
+  .time-period-label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 14px;
+    display: block;
+    width: 93px; /* Increased from 80px to add more padding/space */
+    text-align: left; /* Add this to center each label */
+    padding-left: 0.5rem;
+  }
+  
+  .time-period-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  
+  .time-period-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    flex: 1;
+    max-width: 100%;
+  }
+  
+  .time-chip {
+    min-width: 2.98rem;
+    height: 28px;
+    padding: 0 3px; 
+    border-radius: 7px;
+    background: #fff;
+    border: 2px solid #007CA6;
+    color: #007CA6;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  
+  .time-chip:hover {
+    background: #F0F9FF;
+  }
+  
+  .time-chip.active {
+    background: #007CA6;
+    color: #fff;
+  }
+  
+  .no-times {
+    color: #6B7280;
+    font-size: 14px;
+    font-style: italic;
+    padding-left: 10px;
+  }
+  
+  .selected-row {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    gap: 18px;
+    margin: -43px 0 8px;
+    justify-content: center; /* Add this to center the content */
+    border-radius: 17px; /* Round the corners more */
+    padding-top: 50px; /* Add padding around the content */
+    padding-bottom: 9px; /* Add padding around the content */
+    background-color: #f4f4f4;
+    z-index: 1;
+  }
+  
+  .sel-label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 14px;
+  }
+  
+  .selected-time-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  
+  .selected-time-pill {
+    min-width: 80px;
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 8px;
+    background: #F8FAFC;
+    border: 2px solid #E2E8F0;
+    color: #475569;
+    font-weight: 600;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .selected-time-pill.tz {
+    color: #374151; /* Change to gray color */
+    font-weight: 600; /* Make it regular weight */
+    padding: 8px; /* Remove padding since no border */
+    min-width: auto; /* Remove minimum width */
+  }
+  
+  .propose-meeting-btn {
+    width: 100%;
+    max-width: 420px;
+    height: 54px;
+    border-radius: 30px;
+    background: #007CA6;
+    color: #fff;
+    border: 0;
+    font-weight: 700;
+    letter-spacing: .3px;
+    font-size: 16px;
+    box-shadow: 0 4px 12px rgba(0, 124, 166, .25);
+    margin-top: 1.2rem;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin: 1.2rem auto 0; /* Change to auto for horizontal centering */
+    display: block; /* Ensure it's a block element for margin auto to work */
+  }
+  
+  .propose-meeting-btn:hover {
+    background: #006B91;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 124, 166, .3);
+  }
+  
+  .propose-meeting-btn:active {
+    transform: translateY(0);
+  }
+  
+  .google-signin-note {
+    text-align: center;
+    color: #6B7280;
+    font-size: 12px;
+    margin-top: 8px;
+    font-style: italic;
+  }
+
+
+@keyframes alertSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+
+  @media (max-width: 980px) {
+    .modal-grid { 
+      grid-template-columns: 1fr; 
+    }
+  
+  }
+
+/* ============================
+   DARK MODE
+   Applied when parent has .theme-dark
+   ============================ */
+
+.theme-dark .modal-content.modal-scheduler {
+  background: #0b1220;
+  color: #e5e7eb;
+  box-shadow: 0 24px 48px rgba(0,0,0,0.55);
+}
+
+.theme-dark .modal-header {
+  border-bottom-color: #1f2937;
+}
+
+.theme-dark .modal-student-name {
+  color: #7dd3fc;
+}
+
+.theme-dark .status-dropdown {
+  background: #0f1a2b;
+  border-color: #1f2937;
+}
+
+.theme-dark .status-select {
+  color: #cfe9f6;
+  background: #0f1a2b;
+}
+
+.theme-dark .status-select option {
+  background: #0f1a2b;
+  color: #cfe9f6;
+}
+
+.theme-dark .pill-academic,
+.theme-dark .pill-industry {
+  background: #0f1a2b;
+  color: #7dd3fc;
+  border-color: #1f2a37;
+}
+
+.theme-dark .info-section {
+  background: #0f1a2b;
+  border-color: #1f2937;
+}
+
+/* ============================
+   MODAL SCROLLING - HIDE SCROLLBARS
+   ============================ */
+
+/* Hide scrollbars for all modal content while keeping scroll functionality */
+.modal-content {
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.modal-content::-webkit-scrollbar {
+  display: none; /* WebKit browsers */
+}
+
+.modal-left {
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.modal-left::-webkit-scrollbar {
+  display: none; /* WebKit browsers */
+}
+
+.modal-right {
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.modal-right::-webkit-scrollbar {
+  display: none; /* WebKit browsers */
+}
+
+/* Ensure dark mode modal scrollbars are also hidden */
+.theme-dark .modal-content,
+.theme-dark .modal-left,
+.theme-dark .modal-right,
+.theme-dark .modal-content *,
+.theme-dark .modal-left *,
+.theme-dark .modal-right * {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* Internet Explorer 10+ */
+}
+
+.theme-dark .modal-content::-webkit-scrollbar,
+.theme-dark .modal-left::-webkit-scrollbar,
+.theme-dark .modal-right::-webkit-scrollbar,
+.theme-dark .modal-content *::-webkit-scrollbar,
+.theme-dark .modal-left *::-webkit-scrollbar,
+.theme-dark .modal-right *::-webkit-scrollbar {
+  display: none !important; /* WebKit browsers */
+}
+
+/* ============================
+   DARK MODE CALENDAR STYLING
+   ============================ */
+
+/* Calendar container */
+.theme-dark .calendar-card {
+  background: #0f1a2b;
+  border: 1px solid #1f2937;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+/* Main calendar component background */
+.theme-dark .react-calendar {
+  background: #0f1a2b !important;
+  border-radius: 20px;
+}
+
+/* Times container */
+.theme-dark .times-card {
+  background: #0f1a2b;
+  border: 1px solid #1f2937;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+/* Available dates card */
+.theme-dark .available-dates-card {
+  background: #0f1a2b;
+  border: 1px solid #1f2937;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+.theme-dark .available-dates-label {
+  color: #9ca3af;
+}
+
+.theme-dark .available-dates-value {
+  color: #7dd3fc;
+}
+
+/* Calendar navigation buttons */
+.theme-dark .react-calendar__navigation button {
+  color: #e5e7eb;
+  background: #1f2937;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.theme-dark .react-calendar__navigation button:hover {
+  background-color: #374151 !important;
+  color: #f9fafb !important;
+}
+
+.theme-dark .react-calendar__navigation button:active {
+  background-color: #4b5563 !important;
+}
+
+.theme-dark .react-calendar__navigation button:focus {
+  background-color: #374151 !important;
+}
+
+/* Calendar navigation label (month/year) */
+.theme-dark .react-calendar__navigation__label {
+  color: #e5e7eb;
+  background: #1f2937 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Weekday headers */
+.theme-dark .react-calendar__month-view__weekdays {
+  color: #9ca3af;
+}
+
+/* Calendar tiles (date buttons) */
+.theme-dark .react-calendar__tile {
+  background: #1f2937;
+  color: #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Neighboring month dates */
+.theme-dark .react-calendar__month-view__days__day--neighboringMonth {
+  background-color: #111827 !important;
+  color: #4b5563 !important;
+}
+
+/* Active/selected date */
+.theme-dark .react-calendar__tile--active {
+  background: #0ea5e9 !important;
+  color: white !important;
+  box-shadow: 0 2px 4px rgba(14, 165, 233, 0.4);
+}
+
+/* Hover and focus states */
+.theme-dark .react-calendar__tile:not(:disabled):hover,
+.theme-dark .react-calendar__tile:not(:disabled):focus {
+  background-color: #374151;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Disabled dates */
+.theme-dark .react-calendar__tile:disabled {
+  background-color: #111827 !important;
+  color: #374151 !important;
+  opacity: 0.4;
+}
+
+/* Override default react-calendar weekend red color in dark mode - only for enabled current month dates */
+.theme-dark .react-calendar__tile:enabled.react-calendar__month-view__days__day--weekend:not(.react-calendar__tile--active):not(.react-calendar__month-view__days__day--neighboringMonth) {
+  color: #e5e7eb !important; /* Same as weekday color in dark mode */
+}
+
+.theme-dark .react-calendar__tile:enabled.react-calendar__month-view__days__day--weekend:not(.react-calendar__tile--active):not(.react-calendar__month-view__days__day--neighboringMonth) abbr {
+  color: #e5e7eb !important; /* Same as weekday color in dark mode */
+}
+
+/* Time period labels */
+.theme-dark .time-period-label {
+  color: #9ca3af;
+}
+
+/* Time slots */
+.theme-dark .time-slot {
+  background: #1f2937;
+  color: #e5e7eb;
+  border: 1px solid #374151;
+}
+
+.theme-dark .time-slot:hover {
+  background: #374151;
+  border-color: #4b5563;
+}
+
+.theme-dark .time-slot.selected {
+  background: #0ea5e9;
+  color: white;
+  border-color: #0ea5e9;
+}
+
+/* Selected time section */
+.theme-dark .sel-label {
+  color: #9ca3af;
+}
+
+.theme-dark .selected-time-pill {
+  background: #1f2937;
+  color: #e5e7eb;
+  border: 1px solid #374151;
+}
+
+.theme-dark .selected-time-pill.tz {
+  background: #374151;
+  color: #9ca3af;
+}
+
+/* No times message */
+.theme-dark .no-times {
+  color: #9ca3af;
+}
+
+/* Comments section dark mode */
+.theme-dark .comments-section {
+  background: #0f1a2b;
+}
+
+.theme-dark .comments-section .info-value {
+  color: #ebe6e5;
+  border-color: #374151;
+}
+
+/* Modal grid vertical divider - match header border color */
+.theme-dark .modal-left {
+  border-right-color: #1f2937;
+}
+
+/* Comments hover overlay dark mode */
+.theme-dark .comments-clickable:hover {
+  background-color: #1f2937 !important;
+  border-color: #4b5563;
+}
+
+.theme-dark .info-label {
+  color: #9ca3af;
+}
+
+.theme-dark .info-value {
+  background: #0b1220;
+  color: #cfe9f6;
+  border-color: #1f2937;
+}
+
+.theme-dark .info-value-text {
+  color: #cfe9f6;
+}
+
+.theme-dark .copy-btn {
+  color: #9ca3af;
+}
+
+.theme-dark .copy-btn:hover {
+  color: #7dd3fc;
+}
+
+.theme-dark .calendar-card {
+  background: #0f1a2b;
+  border-radius: 20px;
+}
+
+.theme-dark .available-dates-card,
+.theme-dark .times-card {
+  background: #0b1220;
+  border-color: #1f2937;
+  box-shadow: 8px 12px 26px rgba(0,0,0,0.40);
+}
+
+.theme-dark .available-dates-label {
+  color: #9ca3af;
+}
+
+.theme-dark .available-dates-value {
+  color: #cfe9f6;
+}
+
+.theme-dark .time-period-label {
+  color: #9ca3af;
+}
+
+.theme-dark .time-chip {
+  background: #0f1a2b;
+  color: #cbd5e1;
+  border-color: #1f2a37;
+}
+
+.theme-dark .time-chip.active {
+  background: #172a3a;
+  color: #7dd3fc;
+  border-color: #38bdf8;
+}
+
+.theme-dark .time-chip:hover:not(.active) {
+  background: #1f2a37;
+  border-color: #374151;
+}
+
+.theme-dark .selected-row {
+  background-color: #0f1a2b;
+  border-color: #1f2937;
+}
+
+.theme-dark .sel-label {
+  color: #9ca3af;
+}
+
+.theme-dark .selected-time-pill {
+  background: #0f1a2b;
+  color: #cbd5e1;
+  border-color: #1f2a37;
+}
+
+.theme-dark .propose-meeting-btn {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  color: #ffffff;
+  box-shadow: 
+    0 8px 25px rgba(14, 165, 233, 0.4),
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  font-weight: 700;
+  transform: translateY(0);
+  transition: all 0.2s ease;
+}
+
+.theme-dark .propose-meeting-btn:hover {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  box-shadow: 
+    0 12px 35px rgba(14, 165, 233, 0.5),
+    0 6px 18px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  border-color: rgba(14, 165, 233, 0.5);
+}
+
+.theme-dark .propose-meeting-btn:active {
+  transform: translateY(0);
+  box-shadow: 
+    0 6px 20px rgba(14, 165, 233, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.theme-dark .google-signin-note {
+  color: #9ca3af;
+}
+
+.theme-dark .no-times {
+  background: #0f1a2b;
+  color: #9ca3af;
+  border-color: #1f2937;
+}
+
+/* ============================
+   COMMENTS POPUP DARK MODE
+   ============================ */
+
+.theme-dark .comments-popup-overlay {
+  background: rgba(0, 0, 0, 0.8); /* Darker overlay for better contrast */
+}
+
+.theme-dark .comments-popup {
+  background: #0f1a2b; /* Match modal background */
+  color: #e5e7eb;
+  box-shadow: 0 24px 48px rgba(0,0,0,0.6);
+  border: 1px solid #1f2937; /* Subtle border for definition */
+}
+
+.theme-dark .comments-popup-header {
+  background-color: #1f2937; /* Darker header background */
+  border-bottom: 1px solid #374151; /* Consistent border color */
+}
+
+.theme-dark .comments-popup-header h3 {
+  color: #f9fafb; /* Bright white for title */
+}
+
+.theme-dark .comments-popup-close {
+  color: #9ca3af;
+  background: transparent;
+}
+
+.theme-dark .comments-popup-close:hover {
+  background-color: #374151; /* Dark hover background */
+  color: #f9fafb; /* Bright text on hover */
+}
+
+.theme-dark .comments-popup-content {
+  color: #e5e7eb; /* Light text for content */
+  background: #0f1a2b; /* Match popup background */
+}
+
+
+
+
+.theme-dark .submitted-note {
+  background: #0f1a2b;
+  color: #9ca3af;
+  border-color: #1f2937;
+}
+
+.theme-dark .avail-card {
+  background: #0f1a2b;
+  border-color: #1f2937;
+}
+
+.theme-dark .avail-card .label.big {
+  color: #9ca3af;
+}
+
+.theme-dark .avail-day-header {
+  color: #9ca3af;
+}
+
+.theme-dark .avail-chip.on {
+  background: #0f2f22;
+  color: #86efac;
+  border-color: #16a34a;
+}
+
+.theme-dark .avail-chip.off {
+  background: #1f2937;
+  color: #9ca3af;
+  border-color: #4b5563;
+}

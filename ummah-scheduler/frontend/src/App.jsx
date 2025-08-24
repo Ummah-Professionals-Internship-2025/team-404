@@ -1,18 +1,27 @@
 // src/App.jsx
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import SchedulePage from './components/SchedulePage';
 import './App.css';
+import DashboardModal from './components/DashboardModal';
 import ScheduleConfirm from "./components/ScheduleConfirm";
-import logo from './assets/white-horizontal.png'; 
 import FollowUp from "./components/FollowUp";
 import Sidebar from './components/Sidebar';
-import FollowUpScheduler from "./components/FollowUpScheduler";
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
 import Login from './components/Login';
 import LoginCallback from './components/LoginCallback';
 import AdminStatistics from './components/AdminStatistics';
+
+//Logos and SVGs
+import logo from './assets/white-horizontal.png'; 
+import filter_icon from './assets/filter_icon.svg';
+import search_icon from './assets/search_icon.svg';
+import alarm_icon from './assets/alarm.svg';
+import alarm_dark_icon from './assets/alarm_dark.svg';
+import light_mode_icon from './assets/light_mode.svg';
+import dark_mode_icon from './assets/dark_mode.svg';
+
+
 
 function RequireAuth({ children }) {
   const navigate = useNavigate();
@@ -38,6 +47,32 @@ function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProfession, setSelectedProfession] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Theme (light/dark) — persist + respect system preference on first load
+  const [theme, setTheme] = useState(() => {
+    try {
+      const saved = localStorage.getItem('dashboardTheme');
+      if (saved === 'light' || saved === 'dark') return saved;
+      if (typeof window !== 'undefined' && window.matchMedia) {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+    } catch {}
+    return 'light';
+  });
+  
+  const toggleTheme = () => {
+    console.log('toggleTheme called, current theme:', theme);
+    setTheme((t) => {
+      const next = t === 'dark' ? 'light' : 'dark';
+      console.log('Setting theme from', t, 'to', next);
+      try { localStorage.setItem('dashboardTheme', next); } catch {}
+      return next;
+    });
+  };
 
   // ⭐ NEW: UI tick every 60s so cards can become overdue while page is open
   const [, setTick] = useState(Date.now());
@@ -91,12 +126,18 @@ function Dashboard() {
   };
 
   const isOverdue = (item) => {
-    // Only flag cards that are still To Do
+
+        // Only flag cards that are still To Do
+    // OVERDUE condition - only IF still TO DO
+    /*
     const status = (item.status || 'To Do').trim().toLowerCase();
     if (status !== 'to do') return false;
+    */
 
+    // Flag ALL cards whose preferred days have passed, regardless of status
     const end = parseTimelineEnd(item.timeline);
     if (!end) return false;
+    
     return new Date() > end; // overdue if current time is after preferred window end
   };
   // ─────────────────────────────────────────────────────────────
@@ -127,225 +168,436 @@ function Dashboard() {
     };
   }, [selected, showNameModal]); 
 
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    
+    const handleScroll = () => {
+      const header = document.querySelector('.app-header');
+      if (!header) return;
+      
+      if (window.scrollY > lastScrollY && window.scrollY > 100) {
+        // Scrolling down
+        header.classList.add('hidden');
+      } else {
+        // Scrolling up
+        header.classList.remove('hidden');
+      }
+      
+      lastScrollY = window.scrollY;
+    };
+  
+    window.addEventListener('scroll', handleScroll);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  
+  // ── UI helpers for card formatting (matching Follow-Up style) ─────────────
+  const DAYS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  const renderAvailabilityChips = (value) => {
+    const raw = Array.isArray(value) ? value.join(',') : String(value || '');
+    const isAnytime = raw.toLowerCase().includes('anytime');
+    
+    return (
+      <div className="wkdays wkdays--dash">
+        {DAYS.map((d) => {
+          const on = isAnytime || raw.toLowerCase().includes(d.toLowerCase());
+          return (
+            <span key={d} className={`day ${on ? 'on' : 'off'}`}>{d}</span>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const splitIndustry = (val) => {
+    if (!val) return { primary: '—', extra: 0 };
+    if (Array.isArray(val)) return { primary: val[0] || '—', extra: Math.max(0, val.length - 1) };
+    const parts = String(val).split(',').map((s) => s.trim()).filter(Boolean);
+    return { primary: parts[0] || '—', extra: Math.max(0, parts.length - 1) };
+  };
+
+  const renderIndustryPills = (industry) => {
+    const { primary, extra } = splitIndustry(industry);
+    return (
+      <>
+        <span className="pill-blue">{primary}</span>
+        {extra > 0 && <span className="pill-extra">+{extra}</span>}
+      </>
+    );
+  };
+
+  const initials = (name = '') => (name.trim()[0] || '').toUpperCase();
+
   return (
-    <div className="app-container">
-      {/* ⭐ NEW: tiny keyframes for the pulse effect */}
-      <style>{`
-        @keyframes overduePulse {0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
-      `}</style>
+    <div className={`app-container ${theme === 'dark' ? 'theme-dark' : ''}`}>
 
-      <header className="app-header">
-        <img src={logo} alt="Ummah Professionals" className="logo" />
+    <header className="app-header">
+      <div className="main-header">
+        <div className="admin-header-left">
+          <img src={logo} alt="Ummah Professionals" className="logo" />
+        </div>
+
         <h1>Internal Scheduler Tool</h1>
-        <Sidebar />
-      </header>
 
-      <div className="filter-controls">
-        <input
-          type="text"
-          placeholder="Search by name or profession..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="search-bar"   
-        />
-        <select
-          value={selectedProfession}
-          onChange={(e) => setSelectedProfession(e.target.value)}
-          className="dropdown-filter"
-        >
-          <option value="">All Professions</option>
-          {[...new Set(submissions.map((s) => s.industry).filter(Boolean))].map((industry) => (
-            <option key={industry} value={industry}>
-              {industry}
-            </option>
-          ))}
-        </select>
+        <div className="admin-header-right">
+          {/* Theme toggle */}
+          <button
+            className="theme-toggle"
+            aria-label="Toggle dark mode"
+            aria-pressed={theme === 'dark'}
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            onClick={toggleTheme}
+          >
+            <img 
+              src={theme === 'dark' ? light_mode_icon : dark_mode_icon}
+              alt={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+              width="30"
+              height="27.5"
+            />
+          </button>
 
-        <div className="status-filter-buttons my-4 flex gap-2">
-          {['All', 'To Do', 'In Progress', 'Canceled'].map((status) => (
-            <button
-              key={status}
-              onClick={() => setStatusFilter(status)}
-              className={`px-4 py-1 rounded-lg border text-sm ${
-                statusFilter === status
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-gray-700 border-gray-300'
-              }`}
-            >
-              {status}
-            </button>
-          ))}
+          <div className="sidebar-anchor">
+            <Sidebar />
+          </div>
+        </div>
+      </div>
+    </header>
+
+ 
+    <div className="filter-controls">
+      <div className="toolbar-left">
+        {/* Search pill */}
+        <div className="search-pill">
+          <img 
+            src={search_icon} 
+            alt="Search" 
+            className="search-icon"
+            onClick={() => {
+              document.querySelector('.search-pill input').focus();
+            }}
+          />
+          <input
+            type="text"
+            placeholder="Search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
+        {/* Filter dropdown pill */}
+        <div className="filter-pill">
+          <img 
+            src={filter_icon} 
+            alt="Filter" 
+            className="filter-icon"
+            onClick={() => {
+              document.querySelector('.filter-pill select').click();
+            }}
+          />
+          <select
+            value={selectedProfession}
+            onChange={(e) => setSelectedProfession(e.target.value)}
+          >
+            <option value="">Filter by Profession</option>
+            {(() => {
+              // Extract individual industries from comma-separated strings
+              const allIndustries = submissions
+                .map(s => s.industry)
+                .filter(Boolean)
+                .flatMap(industry => 
+                  industry.split(',').map(i => i.trim())
+                )
+                .filter(Boolean);
+              
+              // Get unique industries and sort them
+              return [...new Set(allIndustries)]
+                .sort()
+                .map(industry => (
+                  <option key={industry} value={industry}>
+                    {industry}
+                  </option>
+                ));
+            })()}
+          </select>
+          <svg 
+            className="chevron-icon" 
+            viewBox="0 0 20 20" 
+            fill="currentColor"
+            onClick={() => {
+              document.querySelector('.filter-pill select').click();
+            }}
+          >
+            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+          </svg>
         </div>
       </div>
 
+      {/* Status filter pills */}
+      <div className="status-filter-pills">
+        {['ALL', 'TO DO', 'IN PROGRESS', 'CANCELED'].map((status) => (
+          <button
+            key={status}
+            onClick={() => setStatusFilter(status === 'ALL' ? 'All' : status === 'TO DO' ? 'To Do' : status === 'IN PROGRESS' ? 'In Progress' : 'Canceled')}
+            className={`status-pill status-pill-${status.toLowerCase().replace(/\s+/g, '-')} ${
+              (statusFilter === 'All' && status === 'ALL') ||
+              (statusFilter === 'To Do' && status === 'TO DO') ||
+              (statusFilter === 'In Progress' && status === 'IN PROGRESS') ||
+              (statusFilter === 'Canceled' && status === 'CANCELED')
+                ? 'active'
+                : ''
+            }`}
+          >
+            {status}
+          </button>
+        ))}
+      </div>
+    </div>
+
+
       <div className="content-container">
+        
+        {/* Column headers using same structure as cards */}
+      <div className="dash-card header-card">
+        <div className="card-content">
+          <div className="dash-col-left">
+            <div className="header-text">NAME</div>
+          </div>
+          <div className="dash-col-avail">
+            <div className="header-text">AVAILABILITY</div>
+          </div>
+          <div className="dash-col-industry">
+            <div className="header-text">INDUSTRY</div>
+          </div>
+          <div className="dash-col-picked">
+            <div className="header-text">PICKED BY</div>
+          </div>
+          <div className="dash-col-status">
+            <div className="header-text">STATUS</div>
+          </div>
+        </div>
+      </div>
+      
         {loading ? (
           <p className="status-text">Loading submissions...</p>
         ) : submissions.length === 0 ? (
           <p className="status-text">No submissions found.</p>
         ) : (
-          <div className="submissions-grid">
-            {submissions
-              .filter(item =>
+          <>
+            <div className="submissions-grid">
+
+{(() => {
+  // Filter submissions
+  const filteredSubmissions = submissions.filter(item =>
+    (!searchQuery ||
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.industry.toLowerCase().includes(searchQuery.toLowerCase()))
+    && (!selectedProfession || 
+        item.industry.split(',').map(i => i.trim()).includes(selectedProfession))
+    && (statusFilter === 'All' || item.status === statusFilter)
+  );
+  
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredSubmissions.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedSubmissions = filteredSubmissions.slice(startIndex, endIndex);
+  
+  return paginatedSubmissions.map((item) => (
+    <div
+      key={item.id}
+      className="dash-card"
+      onClick={() => setSelected(item)}
+      style={{ position: 'relative' }}
+    >
+      <div className="card-content">
+        {/* Left column: Name, Email, and Overdue badge */}
+        <div className="dash-col-left">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '22px' }}>
+            <div>
+              <div className="dash-name">{item.name}</div>
+              <div className="dash-email">{item.email}</div>
+            </div>
+
+            {/* Overdue badge positioned next to name/email */}
+            {isOverdue(item) && (
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  animation: 'overduePulse 1.9s infinite',
+                  marginLeft: '1px',
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <img src={theme === 'dark' ? alarm_dark_icon :alarm_icon} 
+                  alt="Alarm" 
+                  width="34" 
+                  height="34" 
+                  style={{ flexShrink: 0 }} 
+                  />
+                
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Availability column */}
+        <div className="dash-col-avail">
+          {renderAvailabilityChips(item.availability)}
+        </div>
+
+        {/* Industry column */}
+        <div className="dash-col-industry">{renderIndustryPills(item.industry)}</div>
+
+        {/* Picked by column */}
+        <div className="dash-col-picked">
+          {item.pickedBy ? (
+            <div className="picker-name">{item.pickedBy}</div>
+          ) : (
+            <div className="picker-name-empty"> </div>
+          )}
+        </div>
+
+        {/* Status column */}
+        <div className="dash-col-status">
+          {(() => {
+            console.log('Current theme:', theme, 'Status:', item.status, 'Theme class:', theme === 'dark' ? 'theme-dark' : 'theme-light');
+            const statusStyles = theme === 'dark' ? {
+              'Done': { backgroundColor: '#0f2f22', color: '#86efac' },
+              'In Progress': { backgroundColor: '#20190b', color: '#f8d473' },
+              'To Do': { backgroundColor: '#172a3a', color: '#7dd3fc' },
+              'Canceled': { backgroundColor: '#2b2f36', color: '#a9b1ba' },
+            } : {
+              'Done': { backgroundColor: '#DCFEE7', color: '#17803D' },
+              'In Progress': { backgroundColor: '#FEF9C3', color: '#92400D' },
+              'To Do': { backgroundColor: '#DBE9FE', color: '#1D40B0' },
+              'Canceled': { backgroundColor: '#EDF2F6', color: '#595F69' },
+            };
+            const currentStyle = statusStyles[item.status] || statusStyles['To Do'];
+            return (
+              <div 
+                className={`status-tag ${theme === 'dark' ? 'theme-dark' : ''}`}
+                style={theme === 'dark' ? {} : { backgroundColor: currentStyle.backgroundColor, color: currentStyle.color }}
+                data-status={item.status || 'To Do'}
+                title={`Theme: ${theme}, Status: ${item.status}`}
+              >
+                {item.status || 'No Status'}
+              </div>
+            );
+          })()}
+        </div>
+
+
+      </div>
+    </div>
+  ));
+})()}
+            </div>
+            
+            {/* Pagination */}
+            {(() => {
+              const filteredSubmissions = submissions.filter(item =>
                 (!searchQuery ||
                   item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                   item.industry.toLowerCase().includes(searchQuery.toLowerCase()))
                 && (!selectedProfession || item.industry === selectedProfession)
                 && (statusFilter === 'All' || item.status === statusFilter)
-              )
-              .map((item) => (
-                <div
-                  key={item.id}
-                  className="submission-card"
-                  onClick={() => setSelected(item)}
-                  style={{ position: 'relative' }}
-                >
-                  <div className="card-content">
-                    <div className="student-info">
-                      <p className="student-name">{item.name}</p>
-                      <p className="student-industry">{item.industry}</p>
-                      <p className="student-email">{item.email}</p>
-                      <div className="availability">
-                        <p><strong>Availability:</strong> {item.availability}</p>
-                      </div>
-
-                      {/* ⭐ NEW: Overdue badge (only when To Do and past preferred end date) */}
-                      {isOverdue(item) && (
-                        <div
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 6,
-                            marginTop: 8,
-                            padding: '4px 10px',
-                            borderRadius: 9999,
-                            background: '#fee2e2',   // red-100
-                            color: '#b91c1c',        // red-700
-                            fontSize: 12,
-                            fontWeight: 700,
-                            animation: 'overduePulse 1.6s infinite',
-                            boxShadow: '0 0 0 2px rgba(185,28,28,0.15)',
-                          }}
-                          onClick={(e) => e.stopPropagation()} // don't open modal when clicking the badge
-                        >
-                          <span role="img" aria-label="alarm"></span>
-                          Overdue — Needs Attention
-                        </div>
-                      )}
-                    </div>
-
-                    {(() => {
-                      const statusStyles = {
-                        'Done': {
-                          backgroundColor: '#dcfce7',
-                          color: '#15803d',
-                        },
-                        'In Progress': {
-                          backgroundColor: '#fef9c3',
-                          color: '#92400e',
-                        },
-                        'To Do': {
-                          backgroundColor: '#e0e7ff',
-                          color: '#1e40af',
-                        },
-                      };
-
-                      const currentStyle = statusStyles[item.status] || statusStyles['To Do'];
-
-                      return (
-                        <div style={{ width: '100px', textAlign: 'center' }}>
-                          <div
-                            className="status-tag"
-                            style={{
-                              backgroundColor: currentStyle.backgroundColor,
-                              color: currentStyle.color,
-                              padding: '4px 8px',
-                              borderRadius: '8px',
-                              fontWeight: '500',
-                              marginBottom: '4px',
-                            }}
-                          >
-                            {item.status || 'No Status'}
-                          </div>
-
-                          {item.pickedBy && (
-                            <div style={{ fontSize: '0.8rem', color: '#555' }}>
-                              Picked by: {item.pickedBy}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })()}
-                  </div>
+              );
+              const totalPages = Math.ceil(filteredSubmissions.length / itemsPerPage);
+              
+              if (totalPages <= 1) return null;
+              
+              return (
+                <div className="pagination">
+                  <button 
+                    className="pagination-btn"
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                  >
+                    First
+                  </button>
+                                     <button 
+                     className="pagination-btn pagination-nav"
+                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                     disabled={currentPage === 1}
+                   >
+                     <span className="arrow left">←</span>
+                   </button>
+                  
+                                     {(() => {
+                     // Calculate the sliding window of 5 pages
+                     let startPage = Math.max(1, currentPage - 2);
+                     let endPage = Math.min(totalPages, startPage + 4);
+                     
+                     // Adjust if we're near the end
+                     if (endPage - startPage < 4) {
+                       startPage = Math.max(1, endPage - 4);
+                     }
+                     
+                     const pages = [];
+                     for (let i = startPage; i <= endPage; i++) {
+                       pages.push(i);
+                     }
+                     
+                     return pages.map(page => (
+                       <button
+                         key={page}
+                         className={`pagination-btn ${currentPage === page ? 'active' : ''}`}
+                         onClick={() => setCurrentPage(page)}
+                       >
+                         {page}
+                       </button>
+                     ));
+                   })()}
+                  
+                                     <button 
+                     className="pagination-btn pagination-nav"
+                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                     disabled={currentPage === totalPages}
+                   >
+                     <span className="arrow right">→</span>
+                   </button>
+                  <button 
+                    className="pagination-btn"
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Last
+                  </button>
                 </div>
-              ))}
-          </div>
+              );
+            })()}
+          </>
         )}
       </div>
 
       {selected && (
         <div className="modal-overlay" onClick={() => setSelected(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="close-btn" onClick={() => setSelected(null)}>&times;</button>
-            <h2>{selected.name}</h2>
-            <p><strong>Email:</strong> {selected.email}</p>
-            <p><strong>Phone:</strong> {selected.phone}</p>
-            <p><strong>Industry:</strong> {selected.industry}</p>
-            <p><strong>Academic Standing:</strong> {selected.academicStanding}</p>
-            <p><strong>Looking For:</strong> {selected.lookingFor}</p>
-            <p><strong>Resume:</strong> <a href={selected.resume} target="_blank" rel="noreferrer">View Resume</a></p>
-            <p><strong>How They Heard:</strong> {selected.howTheyHeard}</p>
-            <p><strong>Weekly Availability:</strong> {selected.availability}</p>
-            <p><strong>Preferred Times:</strong> {selected.timeline}</p>
-            <p><strong>Other Info:</strong> {selected.otherInfo}</p>
-            <p><strong>Submitted:</strong> {selected.submitted}</p>
-
-            <div className="modal-buttons">
-              <div className="status-dropdown">
-                <label htmlFor="status-select">Status:</label>
-                <select
-                  id="status-select"
-                  value={selected.status || ''}
-                  onChange={(e) => {
-                    const newStatus = e.target.value;
-
-                    if (newStatus === 'In Progress' || newStatus === 'Done') {
-                      setPendingStatus(newStatus);
-                      setPendingItemId(selected.id);
-                      setShowNameModal(true); // show modal to collect advisor name
-                    } else {
-                      setSelected((prev) => ({ ...prev, status: newStatus }));
-                      setSubmissions((prev) =>
-                        prev.map((s) =>
-                          s.id === selected.id ? { ...s, status: newStatus } : s
-                        )
-                      );
-                    }
-                  }}
-                >
-                  <option value="To Do">To Do</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Done">Done</option>
-                </select>
-              </div>
-
-              <button
-                className="propose-btn"
-                onClick={() => {
-                  setSelected(null);
-                  navigate(`/schedule/${selected.id}`);
-                }}
-              >
-                Propose Meeting
-              </button>
-            </div>
-          </div>
+          <DashboardModal
+            student={selected}
+            onClose={() => setSelected(null)}
+            statusValue={selected.status || ''}
+            theme={theme}
+            onChangeStatus={(newStatus) => {
+              if (newStatus === 'In Progress' || newStatus === 'Done') {
+                setPendingStatus(newStatus);
+                setPendingItemId(selected.id);
+                setShowNameModal(true);
+              } else {
+                setSelected((prev) => ({ ...prev, status: newStatus }));
+                setSubmissions((prev) => prev.map((s) => s.id === selected.id ? { ...s, status: newStatus } : s));
+              }
+            }}
+          />
         </div>
       )}
 
       {showNameModal && (
         <div className="modal-overlay" onClick={() => setShowNameModal(false)}>
-          <div className="modal-content name-modal" onClick={(e) => e.stopPropagation()}>
+          <div className={`modal-content name-modal ${theme === 'dark' ? 'theme-dark' : ''}`} onClick={(e) => e.stopPropagation()}>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -398,7 +650,7 @@ function Dashboard() {
                 setPendingStatus('');
               }}
             >
-              <h3 style={{ fontSize: '1.1rem', marginBottom: '10px' }}>Enter Your Name</h3>
+              <h3>Enter Your Name</h3>
               <input
                 type="text"
                 value={advisorNameInput}
@@ -449,7 +701,6 @@ export default function App() {
             </RequireAuth>
           }
         />
-        <Route path="/schedule/:id" element={<SchedulePage />} />
         <Route path="/schedule-confirm" element={<ScheduleConfirm />} />
         <Route
           path="/followup"
@@ -459,14 +710,7 @@ export default function App() {
             </RequireAuth>
           }
         />
-        <Route
-          path="/followup-schedule/:id"
-          element={
-            <RequireAuth>
-              <FollowUpScheduler />
-            </RequireAuth>
-          }
-        />
+        
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/admin-statistics" element={<AdminStatistics />} />

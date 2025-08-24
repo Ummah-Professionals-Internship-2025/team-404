@@ -1,3 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&display=swap');
+
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+}
+
+/* Alarm icon pulsing animation */
+@keyframes overduePulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow-y: scroll; /* Always show scrollbar */
+}
+
+/* ============================
+   GLOBAL SCROLLBAR HIDING
+   ============================ */
+
+/* Hide all scrollbars site-wide while keeping scroll functionality */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* WebKit browsers */
+}
+
+/* Ensure body and html maintain scroll capability */
+html, body {
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none; /* WebKit browsers */
+}
+
+/* Apply to common scrollable containers */
+.app-container,
+.content-container,
+.submissions-grid,
+.filter-controls {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.app-container::-webkit-scrollbar,
+.content-container::-webkit-scrollbar,
+.submissions-grid::-webkit-scrollbar,
+.filter-controls::-webkit-scrollbar {
+  display: none; /* WebKit browsers */
+}
+
 /* App.css */
 .app-container {
   min-height: 100vh;
@@ -5,36 +79,71 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem;
+  padding: 0;
   box-sizing: border-box;
 }
 
 .app-header {
-  display: flex;
+  position: fixed;
+  top: 0;
+  z-index: 30;
+  background: linear-gradient(99.1deg, #003F55 18.55%, #008BBB 78.37%);
+  padding: 34px 28px 34px 28px; /* Added right padding to move burger away from edge */
+  border-bottom: none;
+  box-shadow: 0 4px 56.7px 11px rgba(0,0,0,0.25);
+  margin: 0;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+
+  transform: translateY(0);
+  transition: transform 0.3s ease;
+}
+
+.main-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
-  background-color: #014b6e;
-  color: white;
-  padding: 1.5rem 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  margin-bottom: 2rem;
-  width: 100%;
-  max-width: 1200px;
 }
 
-.logo {
-  height: 50px;
-  margin-right: 1rem;
+.app-header .logo {
+  height: 4.1rem; /* Reduced from 4.5rem to make logo smaller */
+  padding-left: 1.5rem;
+  width: auto;
 }
 
+.app-header h1 {
+  font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: .04em;
+  color: #fff;
+  margin: 0;
+  font-size: 2.5vw; /* Reduced from 2.5vw to make title smaller */
+}
+
+.app-header .admin-header-right {
+  justify-self: end;
+  display: flex;
+  align-items: center; /* Reduced gap between theme toggle and sidebar */
+  margin-right: 2.0rem;
+  margin-top: 0.5rem;
+}
+
+.app-header .sidebar-anchor {
+  display: inline-flex;
+  align-items: center;
+}
+
+.app-header.hidden {
+  transform: translateY(-100%);
+}
 
 .content-container {
   width: 100%;
-  max-width: 1200px;
+  padding: 10px 48px;
+  flex: 1; /* Take up remaining space */
   display: flex;
   flex-direction: column;
-  align-items: center;
 }
 
 .submissions-grid {
@@ -42,46 +151,121 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  flex: 0 0 auto; /* Don't grow, only take needed space */
+  margin-bottom: 3rem; /* Add space below the last submission card */
 }
 
-.submission-card {
-  display: flex;
-  justify-content: space-between;
+.submission-card,.dash-card {
+  display: grid;
+  grid-template-columns: 0.75fr 0.7fr 0.7fr 0.5fr 0.4fr; /* left(name+email) | availability | industry | picked-by | status */
+  column-gap: 16px;
   align-items: center;
   background-color: white;
-  padding: 1.5rem;
-  border-radius: 12px;
+  padding: 2.1rem 1.4rem; /* Reduced from 1.2rem to make cards less tall */
+  border-radius: 16px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s ease;
+  transition: transform 0.2s ease;
   cursor: pointer;
+  min-height: 120px; /* Reduced from 140px to make cards less tall */
 }
 
-.submission-card:hover {
-  transform: translateY(-5px);
+.submission-card:hover,
+.dash-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(111, 110, 110, 0.15);
 }
 
-.card-content {
+.card-content { display: contents; }
+
+.dash-col-left { 
+  display:flex; 
+  flex-direction:column; 
+  gap:6px; 
+  align-items:flex-start; 
+  text-align:left; 
+}
+
+.dash-name {
+  color:#0C607D; 
+  font-weight:700; 
+  padding-left: 1rem;
+  font-size:1.3rem; 
+}
+
+.dash-email { 
+  color:#6b7280; 
+  font-size:0.88rem; 
+  padding-left: 1rem;
+  font-weight: 400;
+}
+
+.dash-col-avail { 
+  display:flex; 
+  align-items:center; 
+}
+
+.dash-col-industry { 
+  display:flex; 
+  align-items:center; 
+  gap:10px; 
+}
+
+.dash-col-picked { 
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  width: 100%;
+  justify-content: center;
+  text-align: center;
 }
 
-.student-name {
-  font-size: 1.2rem;
+.picker-name {
+  /* Indented look with inner shadow and gradient outline */
+  padding: 7px 12px;
+  border-radius: 10px;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: #014b6e;
+  color: #0C607D;
+  border: 2px solid transparent;
+  background-image:
+    linear-gradient(#FFFFFF, #F7FAFC), /* inner card-like surface */
+    linear-gradient(180deg, #8FD2FF, #007ca6); /* blue gradient outline */
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.08),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.6),
+    0 1px 2px rgba(0, 0, 0, 0.05);
+  text-align: center;
+  min-width: 90px;
 }
+
+
+.dash-col-status { 
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  gap: 10px;
+}
+
+.wkdays--dash { display:flex; gap:6px; flex-wrap:wrap; }
+.wkdays--dash .day { width:40px; height:40px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:0.95rem; }
+.wkdays--dash .day.on { background:#EAFBF1; color:#168A43; }
+.wkdays--dash .day.off { background:#ECEFF3; color:#0E1726; opacity:.6; }
+
+.pill-blue { background:#E6F4FF; color:#2C93D8; border-radius:9999px; padding:10px 14px; font-weight:600; font-size:0.95rem; white-space:nowrap; }
+.pill-extra { background:#fff; border-radius:10px; padding:6px 10px; font-weight:700; font-size:0.85rem; color:#2C93D8; box-shadow:0 0 0 1px rgba(0,0,0,0.04); }
 
 .status-tag {
-  padding: 0.4rem 0.8rem;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.85rem;
-  white-space: nowrap;
+  padding: 10px 18px; 
+  border-radius: 20px; 
+  font-weight:600; 
+  text-transform: uppercase; 
+  letter-spacing: .3px; 
+  display:inline-block; 
 }
 
-/* Buttons (including Propose Meeting) */
+
+/* Buttons really just for the name modal */
 button {
   font-family: inherit;
   padding: 0.6rem 1.4rem;
@@ -97,83 +281,22 @@ button:hover {
   transform: translateY(-1px);
 }
 
-/* Propose Meeting button specifically */
-.propose-btn {
-  background-color: #014b6e;
-  color: white;
-  border: 2px solid transparent;
-  transition: all 0.3s ease;
-  margin-top: 1rem;
-}
 
-.propose-btn:hover {
-  background-color: #023e59;
-  border-color: #012f45;
-}
 
-/* Cancel/Confirm modal buttons */
-.cancel-btn {
-  background-color: #e2e8f0;
-  color: #1a202c;
-}
-
-.cancel-btn:hover {
-  background-color: #cbd5e0;
-}
-
-.confirm-btn {
-  background-color: #014b6e;
-  color: white;
-}
-
-.confirm-btn:hover {
-  background-color: #023e59;
-}
-
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background-color: white;
-  padding: 2rem;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-  position: relative;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-}
-
-.close-btn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  font-size: 1.5rem;
-  background: none;
-  border: none;
-  color: #111827;
-  cursor: pointer;
-  z-index: 1001;
-}
 
 .name-modal {
-  width: 100%;
-  padding: 16px;
-  border-radius: 12px;
-  background: white;
+  width: 30% !important;
+  padding: 26px !important;
+  border-radius: 32px !important;
+  background: white !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.name-modal h3 {
+  color: #374151;
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  font-weight: 600;
 }
 
 .name-input {
@@ -182,132 +305,279 @@ button:hover {
   color: black;
   background-color: #f9fafb;
   border: 1px solid #d1d5db;
-  border-radius: 6px;
-  margin-bottom: 16px;
+  border-radius: 12px;
+  margin-bottom: 6px;
   font-size: 0.95rem;
+}
+
+.name-input:focus {
+  outline: none;
+  border: 2px solid #007ca6;
 }
 
 .name-modal-buttons {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 1rem;
-}
-
-.modal-buttons {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.01rem;
   margin-top: 0.5rem;
+  margin-right: 1.2rem;
 }
 
-.status-dropdown {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 0.7rem;
-  margin-top: -0.1rem;
+.name-modal-buttons .cancel-btn {
+  border-radius: 17px;
+  background-color: #EDF2F6;
+  color: #595F69;
+  box-shadow: 0 3px 3px rgba(0, 0, 0, 0.1);
+
 }
 
-.status-dropdown label {
-  font-weight: 600;
-}
-
-.status-dropdown select {
-  padding: 0.5rem;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 1rem;
-}
-
-.status-text {
-  text-align: center;
-  font-size: 1.1rem;
-  color: #666;
-}
-
-.picked-by {
-  font-size: 0.85rem;
-  color: #555;
-  margin-top: 4px;
+.name-modal-buttons .confirm-btn {
+  border-radius: 17px;
+  background-color: #007ca6;
+  color: white;
+  box-shadow: 0 3px 3px rgba(0, 0, 0, 0.1);
 }
 
 .filter-controls {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 20px;
-  padding: 0 10px;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 2rem 3rem 0 3rem; /* Reduced horizontal padding to align with card edges */
+  margin: 9rem 0 0 !important;
+  width: 100%;
+  flex-wrap: wrap;
 }
 
-.search-bar {
-  flex: 1;
-  min-width: 250px;
-  padding: 10px 16px;
-  border-radius: 20px;
-  border: 1px solid #ccc;
-  font-size: 1rem;
+.toolbar-left {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* Search pill */
+.search-pill {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 30px;
+  padding: 10px 18px; /* Reduced from 12px 20px to make smaller */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  min-width: 280px; /* Reduced from 300px to make smaller */
+  position: relative;
+}
+
+.search-pill .search-icon {
+  width: 1rem;
+  color: #9CA3AF;
+  cursor: pointer;
+}
+
+.search-pill input {
+  border: none;
   outline: none;
-  background-color: #fff;
-  transition: border-color 0.3s ease;
+  font-size: 16px;
+  color: #374151;
+  background: transparent;
+  font-weight: 500; /* Medium */
+  flex: 1;
 }
 
-.search-bar:focus {
-  border-color: #4ad9e4;
-  box-shadow: 0 0 0 3px rgba(74, 217, 228, 0.2);
+.search-pill input::placeholder {
+  color: #9CA3AF;
 }
 
-.dropdown-filter {
-  padding: 10px 16px;
-  border-radius: 12px;
-  border: 1px solid #ccc;
-  font-size: 1rem;
-  background-color: #ffffff;
-  color: #333;
+/* Filter dropdown pill */
+.filter-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+  padding: 10px 14px; /* Reduced from 12px 16px to make smaller */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  min-width: 180px; /* Reduced from 200px to make smaller */
+  max-width: 320px; /* Reduced from 340px to make smaller */
+  cursor: pointer;
+  position: relative;
+}
+
+.filter-pill .filter-icon {
+  width: 1.1rem;
+  padding-top: 0.1rem;
+  color: #9CA3AF;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.filter-pill select {
+  border: none;
+  outline: none;
+  font-size: 16px;
+  color: #9CA3AF;
+  background: transparent;
+  appearance: none;
+  flex: 1;
+  cursor: pointer;
+  font-weight: 500; /* Medium */
+  min-width: 0px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Custom dropdown positioning */
+.filter-pill select option {
+  background: white;
+  color: #374151;
+  padding: 8px 12px;
+}
+
+.filter-pill .chevron-icon {
+  width: 16px;
+  height: 16px;
+  color: #9CA3AF;
+  pointer-events: none;
+  cursor: pointer;
+}
+
+/* Status filter pills - ALL, TO DO, IN PROGRESS, DONE */
+.status-filter-pills {
+  display: flex;
+  gap: 12px;
+}
+
+.status-pill {
+  padding: 10px 20px; /* Reduced from 12px 24px to make smaller */
+  border-radius: 50px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1.5px solid #E5E7EB;
+  background: white;
+  color: #9CA3AF; /* default color HERE*/
+  font-size: 13px; /* Reduced from 14px to make smaller */
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-  appearance: none;
-
-  background-image: url("data:image/svg+xml;utf8,<svg fill='%234ad9e4' height='16' viewBox='0 0 24 24' width='16' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 14px center;
-  background-size: 14px;
-  padding-right: 44px;
+  white-space: nowrap;
+  position: relative; /*fixes "button only works when hover over text" */
 }
 
-.dropdown-filter:hover {
-  border-color: #4ad9e4;
-  box-shadow: 0 0 0 3px rgba(74, 217, 228, 0.12);
+/* ALL pill - keep the blue gradient */
+.status-pill-all.active {
+  background: #007ca6;
+  color: white;
+  border: 2px solid transparent;
+  background-image: linear-gradient(#007ca6, #007ca6), 
+  linear-gradient(to bottom, #007ca6, #074b61);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
 }
 
-.dropdown-filter:focus {
-  border-color: #4ad9e4;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(74, 217, 228, 0.3);
+
+/* TO DO pill - blue theme with gradient */
+.status-pill-to-do.active {
+  background: #DBE9FE;
+  color: #1D40B0;
+  border: 2px solid transparent;
+  background-image: linear-gradient(#DBE9FE, #DBE9FE), 
+  linear-gradient(to bottom, #DBE9FE, #1D40B0);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
 }
 
-.followup-scheduler-container {
-  max-width: 500px;
-  margin: 60px auto;
-  text-align: center;
-  background: #fff;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+/* IN PROGRESS pill - yellow theme with gradient */
+.status-pill-in-progress.active {
+  background: #FEF9C3;
+  color: #92400D;
+  border: 2px solid transparent;
+  background-image: linear-gradient(#FEF9C3, #FEF9C3), 
+  linear-gradient(to bottom, #FEF9C3, #92400D);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
 }
 
-.calendar-picker {
-  width: 100%;
-  padding: 10px;
-  font-size: 1rem;
-  margin: 20px 0;
-  border-radius: 8px;
-  border: 1px solid #ccc;
+/* CANCELLED pill - gray theme with gradient */
+.status-pill-canceled.active {
+  background: #EDF2F6;
+  color: #595F69;
+  border: 2px solid transparent;
+  background-image: linear-gradient(#EDF2F6, #EDF2F6), 
+  linear-gradient(to bottom, #EDF2F6, #595F69);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
 }
+
+/* Fallback for other active pills */
+.status-pill.active:not(.status-pill-all):not(.status-pill-to-do):not(.status-pill-in-progress):not(.status-pill-canceled) {
+  background: #007ca6;
+  color: white;
+  border: 2px solid transparent;
+  background-image: linear-gradient(#007ca6, #007ca6), linear-gradient(to bottom, #007ca6, #074b61);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+
+/* Default hover for ALL and other pills */
+.status-pill:hover:not(.active) {
+  border-color: #F9FAFB;
+  background: #F9FAFB;
+}
+
+
+/* LABELS - labels: name, availability, industry, status */
+.header-card {
+  background: transparent !important;
+  box-shadow: none !important;
+  cursor: default !important;
+  transform: none !important;
+  margin-top: -1.5rem; /* Add top spacing */
+  margin-bottom: -3rem;
+  padding-top: 0.3rem; /* Reduce top padding */
+  padding-bottom: 0.1rem; /* Reduce bottom padding */
+}
+
+.header-card:hover {
+  transform: none !important;
+}
+
+.header-text {
+  color: #98A1AE !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  letter-spacing: 0.25px !important;
+  padding-left: 1rem; /* Only for name  */
+  padding-right: 1rem; /* Only for status  */
+  padding-bottom: 1.1rem; 
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+.dash-col-industry .header-text{
+  padding-left: 0.8rem !important;
+}
+
+.dash-col-avail .header-text{
+  padding-left: 5.8rem !important;
+}
+
+
+/* Arrow styling */
+.header-text::after {
+  content: '';
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 7px solid #C8CDD5;
+  flex-shrink: 0;
+}
+
+
 
 @media (max-width: 600px) {
   .filter-controls {
@@ -315,9 +585,559 @@ button:hover {
     align-items: stretch;
   }
 
-  .search-bar,
-  .dropdown-filter {
+  .search-pill,
+  .filter-pill {
     width: 100%;
   }
 }
 
+/* ============================
+   DARK MODE
+   Applied when .app-container has .theme-dark
+   ============================ */
+
+.app-container.theme-dark {
+  background: #0f172a; /* slate-900-ish */
+  color: #e5e7eb;
+  /* Ensure scrollbars are hidden in dark mode */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.app-container.theme-dark::-webkit-scrollbar {
+  display: none; /* WebKit browsers */
+}
+
+/* Hide scrollbars for all dark mode elements */
+.theme-dark *,
+.theme-dark *::-webkit-scrollbar {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* Internet Explorer 10+ */
+}
+
+.theme-dark *::-webkit-scrollbar {
+  display: none !important; /* WebKit browsers */
+}
+
+/* Header */
+.theme-dark .app-header {
+  background: linear-gradient(99.1deg, #0b1220 18.55%, #0f1a2b 78.37%);
+  box-shadow: 0 4px 56.7px 11px rgba(0,0,0,0.45);
+}
+
+.theme-dark .app-header h1 {
+  color: #ECEFF3;
+  text-shadow: 0 1px 0 rgba(0,0,0,.25);
+}
+
+/* Theme toggle button */
+.theme-dark .theme-toggle,
+.theme-toggle {
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 18px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.2rem;
+}
+
+.theme-dark .theme-toggle:hover,
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.05);
+}
+
+.theme-dark .theme-toggle:active,
+.theme-toggle:active {
+  transform: scale(0.95);
+}
+
+.theme-dark .theme-toggle img,
+.theme-toggle img {
+  filter: brightness(0) invert(1); /* Makes SVG white */
+  transition: filter 0.2s ease;
+}
+
+.theme-dark .theme-toggle:hover img,
+.theme-toggle:hover img {
+  filter: brightness(0) invert(1) drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+}
+
+/* Filter controls */
+.theme-dark .filter-controls {
+  background: #0f1a2b;
+  border-color: #1f2937;
+}
+
+
+.theme-dark .search-pill,
+.theme-dark .filter-pill {
+  background: #0f1b2a;
+  box-shadow: 8px 12px 18px rgba(0,0,0,0.35);
+  border: 1px solid #1f2937;
+}
+
+.theme-dark .search-pill input,
+.theme-dark .filter-pill select {
+  color: #9CA3AF;
+  background: transparent;
+}
+
+.theme-dark .filter-pill select option {
+  background: #0f1b2a; 
+  color: #cfe9f6;
+}
+
+.theme-dark .search-icon,
+.theme-dark .filter-icon,
+.theme-dark .chevron-icon {
+  color: #9ca3af;
+  opacity: 0.8;
+}
+
+.theme-dark .search-icon:hover,
+.theme-dark .filter-icon:hover {
+  color: #7dd3fc;
+}
+
+/* Status pills */
+.theme-dark .status-pill {
+  background: #0f1a2b;
+  color: #cbd5e1;
+  border-color: #1f2a37;
+}
+
+.theme-dark .status-pill:hover:not(.active) {
+  background: #1f2a37;
+  border-color: #374151;
+}
+
+/* Status pill specific colors in dark mode */
+.theme-dark .status-pill-all.active {
+  background: #0f1a2b;
+  color: #e6f6ff;
+  border: 2px solid #e6f6ff;
+}
+
+.theme-dark .status-pill-to-do.active {
+  background: #172a3a;
+  color: #7dd3fc;
+  border: 2px solid #38bdf8;
+}
+
+.theme-dark .status-pill-in-progress.active {
+  background: #20190b;
+  color: #f8d473;
+  border: 2px solid #f8d473;
+}
+
+.theme-dark .status-pill-canceled.active {
+  background: #2b2f36;
+  color: #a9b1ba;
+  border: 2px solid #a9b1ba;
+}
+
+
+
+/* Cards */
+.theme-dark .submission-card,
+.theme-dark .dash-card {
+  background: #0b1220;
+  border-color: #1f2937;
+  box-shadow: 8px 12px 26px rgba(0,0,0,0.40);
+}
+
+.theme-dark .submission-card:hover,
+.theme-dark .dash-card:hover {
+  box-shadow: 10px 16px 36px rgba(0,0,0,0.5);
+}
+
+.theme-dark .student-name {
+  color: #7dd3fc;
+}
+
+.theme-dark .student-email {
+  color: rgba(188, 214, 229, 0.8);
+}
+
+.theme-dark .picked-by,
+.theme-dark .submitted-time {
+  color: #cbd5e1;
+}
+
+
+/* Card content elements */
+.theme-dark .dash-name {
+  color: #7dd3fc;
+}
+
+.theme-dark .dash-email {
+  color: #9ca3af;
+}
+
+.theme-dark .picker-name {
+  background-image: 
+    linear-gradient(#0f1a2b, #0b1220),
+    linear-gradient(180deg, #1e40af, #1e3a8a);
+  color: #7dd3fc;
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.2),
+    inset 0 -1px 0 rgba(59, 130, 246, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Day availability pills */
+.theme-dark .wkdays--dash .day.on {
+  background: #0f2f22;
+  color: #86efac;
+}
+
+.theme-dark .wkdays--dash .day.off {
+  background: #1f2937;
+  color: #9ca3af;
+  opacity: 0.7;
+}
+
+/* Blue pills and extra pills */
+.theme-dark .pill-blue {
+  background: #0f1a2b;
+  color: #7dd3fc;
+  border: 1px solid #1e40af;
+}
+
+.theme-dark .pill-extra {
+  background: #0f1a2b;
+  color: #7dd3fc;
+  border: 1px solid #1e40af;
+  box-shadow: 0 0 0 1px rgba(30, 64, 175, 0.2);
+}
+
+/* Status tags ON CARDS*/
+.theme-dark .status-tag {
+  color: #e5e7eb;
+}
+
+/* Status tag specific colors - these are the pills on the submission cards */
+.theme-dark .status-tag[data-status="To Do"] {
+  background: #172a3a;
+  color: #7dd3fc;
+}
+
+.theme-dark .status-tag[data-status="In Progress"] {
+  background: #20190b;
+  color: #f8d473;
+}
+
+.theme-dark .status-tag[data-status="Done"] {
+  background: #0f2f22;
+  color: #86efac;
+}
+
+.theme-dark .status-tag[data-status="Canceled"] {
+  background: #2b2f36;
+  color: #a9b1ba;
+}
+
+/* Header card labels */
+.theme-dark .header-text {
+  color: #9ca3af !important;
+}
+
+.theme-dark .header-text::after {
+  border-top-color: #6b7280;
+}
+
+/* Modal */
+.theme-dark .modal-content {
+  background: #0b1220;
+  color: #e5e7eb;
+  box-shadow: 0 24px 48px rgba(0,0,0,0.55);
+}
+
+.theme-dark .modal-overlay {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* Name modal */
+.theme-dark .name-modal {
+  background: #0b1220 !important;
+  color: #e5e7eb !important;
+  border-color: #1f2937 !important;
+}
+
+.theme-dark .name-modal h3 {
+  color: #f3f4f6 !important;
+  font-weight: 600;
+}
+
+.theme-dark .name-input {
+  background: #0f1a2b;
+  color: #cfe9f6;
+  border-color: #1f2937;
+}
+
+.theme-dark .name-input::placeholder {
+  color: #9ca3af;
+}
+
+.theme-dark .name-modal-buttons .cancel-btn {
+  background: #1f2937;
+  color: #cbd5e1;
+  border-color: #374151;
+}
+
+.theme-dark .name-modal-buttons .cancel-btn:hover {
+  background: #374151;
+  color: #e5e7eb;
+  
+}
+
+/* Content container */
+.theme-dark .content-container {
+  background: #0f172a;
+  background: linear-gradient(to bottom, 
+  #0f1a2b 0%, #0f172a 5%);
+}
+
+/* Status messages (loading, no submissions, etc.) */
+.status-text {
+  text-align: center;
+  padding: 3rem 4rem;
+  margin: 2rem auto;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 2px solid #e2e8f0;
+  border-radius: 20px;
+  color: #64748b;
+  font-size: 18px;
+  font-weight: 500;
+  max-width: 500px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+
+/* Dark mode status text */
+.theme-dark .status-text {
+  background: linear-gradient(135deg, #0f1a2b 0%, #1e293b 100%);
+  border-color: #334155;
+  color: #94a3b8;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+
+/* Dashboard status text */
+.theme-dark .dashboard-status-text {
+  color: #9ca3af;
+}
+
+/* ============================
+   FOLLOW-UP DELETE BUTTON
+   ============================ */
+
+.delete-btn {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 2px solid #dc2626;
+  border-radius: 12px;
+  margin-right: 1.1rem;
+  padding: 6px 13px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.delete-btn:hover {
+  background: #dc2626;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.delete-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.2);
+}
+
+/* Dark mode delete button */
+.theme-dark .delete-btn {
+  background: #450a0a;
+  color: #f87171;
+  border-color: #dc2626;
+}
+
+.theme-dark .delete-btn:hover {
+  background: #dc2626;
+  color: white;
+  border-color: #ef4444;
+}
+
+/* ============================
+   PAGINATION STYLING
+   ============================ */
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+}
+
+.pagination-btn {
+  padding: 8px 12px;
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  color: #64748b;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 40px;
+}
+
+/* Navigation buttons (First, Last, arrows) - remove box styling */
+.pagination-btn:is([class*="pagination-nav"], :first-child, :last-child) {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: #007CA6;
+  font-weight: 500;
+}
+
+/* Underline First and Last buttons */
+.pagination-btn:is(:first-child, :last-child) {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.pagination-btn:is([class*="pagination-nav"], :first-child, :last-child):hover:not(:disabled) {
+  background: rgba(0, 124, 166, 0.1);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 124, 166, 0.2);
+  border-radius: 8px;
+}
+
+.pagination-btn:is([class*="pagination-nav"], :first-child, :last-child):disabled {
+  background: transparent;
+  color: #94a3b8;
+  transform: none;
+  box-shadow: none;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #007CA6;
+  color: #007CA6;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f8fafc;
+  color: #94a3b8;
+}
+
+.pagination-btn.active {
+  background: #007CA6;
+  border-color: #007CA6;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.pagination-btn.active:hover {
+  background: #006B91;
+  border-color: #006B91;
+}
+
+.pagination-ellipsis {
+  padding: 8px 4px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* Navigation arrows */
+
+.arrow {
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.arrow.left {
+  /* Left arrow ← */
+}
+
+.arrow.right {
+  /* Right arrow → */
+}
+
+/* Dark mode pagination */
+.theme-dark .pagination-btn {
+  background: #0f1a2b;
+  border-color: #1f2937;
+  color: #9ca3af;
+}
+
+/* Dark mode navigation buttons */
+.theme-dark .pagination-btn:is([class*="pagination-nav"], :first-child, :last-child) {
+  background: transparent;
+  border: none;
+  color: #7dd3fc;
+}
+
+/* Dark mode underline for First and Last */
+.theme-dark .pagination-btn:is(:first-child, :last-child) {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.theme-dark .pagination-btn:is([class*="pagination-nav"], :first-child, :last-child):hover:not(:disabled) {
+  background: rgba(125, 211, 252, 0.1);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(125, 211, 252, 0.2);
+}
+
+.theme-dark .pagination-btn:is([class*="pagination-nav"], :first-child, :last-child):disabled {
+  background: transparent;
+  color: #64748b;
+  transform: none;
+  box-shadow: none;
+}
+
+.theme-dark .pagination-btn:hover:not(:disabled) {
+  background: #1f2937;
+  border-color: #0ea5e9;
+  color: #7dd3fc;
+}
+
+.theme-dark .pagination-btn:disabled {
+  background: #0b1220;
+  color: #64748b;
+  border-color: #374151;
+}
+
+.theme-dark .pagination-btn.active {
+  background: #0ea5e9;
+  border-color: #0ea5e9;
+  color: #ffffff;
+}
+
+.theme-dark .pagination-btn.active:hover {
+  background: #0284c7;
+  border-color: #0284c7;
+}
+
+.theme-dark .pagination-ellipsis {
+  color: #64748b;
+}
