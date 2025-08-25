@@ -11,6 +11,7 @@ import Sidebar from './Sidebar';
 
 const SOFT_DELETE_KEY = 'softDeletedAdminSubmissions';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
 
 
 /* =========================
