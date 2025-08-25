@@ -11,6 +11,7 @@ import dark_mode_icon from '../assets/dark_mode.svg';
 import Sidebar from "./Sidebar";
 import FollowUpModal from "./FollowUpModal";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
 
 
 export default function FollowUp() {
@@ -196,11 +197,14 @@ const handleProposeMeeting = (dateTime) => {
 
   const me = sessionStorage.getItem("mentorEmail") || mentorEmail;
   if (!me) {
+    // backend login
     window.location.href = `${BACKEND_URL}/auth/login`;
     return;
   }
-  window.location.href = `${BACKEND_URL.replace('/api', '')}/schedule-confirm?email=${me}`;
-};   
+  // frontend confirm page
+  window.location.href = `${FRONTEND_URL}/schedule-confirm?email=${me}`;
+};
+ 
 
 
   return (
