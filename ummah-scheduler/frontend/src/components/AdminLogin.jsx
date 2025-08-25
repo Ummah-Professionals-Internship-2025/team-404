@@ -1,10 +1,11 @@
 //adminlogin.jsx
 import React, { useEffect } from 'react';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function AdminLogin() {
   useEffect(() => {
     // On load, redirect to Google OAuth
-    window.location.href = "http://localhost:5050/auth/admin-login";
+    window.location.href = `${BACKEND_URL}/auth/admin-login`;
   }, []);
 
   return (
