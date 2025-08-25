@@ -1,8 +1,15 @@
-# keep track of dependencies for later
+# Core server
 flask
 flask-cors
 gunicorn
+
+# Google APIs (OAuth + Calendar)
 google-auth
 google-auth-oauthlib
 google-api-python-client
+
+# HTTP requests
 requests
+
+# Monday.com , Discord integration
+python-dotenv  
