@@ -3,6 +3,9 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../assets/white-horizontal.png';
 import './Login.css';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
+
 
 export default function Login() {
   const navigate = useNavigate();
@@ -17,9 +20,10 @@ export default function Login() {
     }
   }, [navigate]);
 
-  const handleLogin = () => {
-    window.location.href = "http://localhost:5050/auth/login-basic";
-  };
+ const handleLogin = () => {
+  window.location.href = `${BACKEND_URL}/auth/login-basic`;
+};
+
 
   return (
     <div className="login-container">
