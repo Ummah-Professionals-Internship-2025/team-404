@@ -42,3 +42,4 @@ npm run dev
 - The frontend app will run on: http://localhost:5173
 
 - GET /api/submissions: Fetches a list of all mentee form submissions in JSON format.
+yes
