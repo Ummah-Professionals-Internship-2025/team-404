@@ -17,6 +17,8 @@ import logo from '../assets/blue-horizontal.png';
 import light_mode_icon from '../assets/light_mode_blue.svg';
 import dark_mode_icon from '../assets/dark_mode_blue.svg';
 import Sidebar from './Sidebar';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 
 ChartJS.register(
   ArcElement,
@@ -302,26 +304,27 @@ export default function AdminStatistics() {
         setLoading(true);
 
         // Primary sources first
-        const primaryUrls = [
-          'http://localhost:5050/api/admin-submissions?all=true',
-          'http://localhost:5050/api/admin-submissions?limit=5000',
-        ];
+const primaryUrls = [
+  `${BACKEND_URL}/api/admin-submissions?all=true`,
+  `${BACKEND_URL}/api/admin-submissions?limit=5000`,
+];
 
-        // Additional likely sources for open/unscheduled leads
-        const todoUrls = [
-          // generic pools
-          'http://localhost:5050/api/submissions?all=true',
-          'http://localhost:5050/api/leads?all=true',
-          'http://localhost:5050/api/pending-submissions?all=true',
-          'http://localhost:5050/api/incoming-submissions?all=true',
-          // status-filtered variants
-          'http://localhost:5050/api/admin-submissions?status=todo',
-          'http://localhost:5050/api/admin-submissions?status=pending',
-          'http://localhost:5050/api/submissions?status=todo',
-          'http://localhost:5050/api/submissions?status=pending',
-          'http://localhost:5050/api/submissions?status=new',
-          'http://localhost:5050/api/submissions?status=to-do',
-        ];
+// Additional likely sources for open/unscheduled leads
+const todoUrls = [
+  // generic pools
+  `${BACKEND_URL}/api/submissions?all=true`,
+  `${BACKEND_URL}/api/leads?all=true`,
+  `${BACKEND_URL}/api/pending-submissions?all=true`,
+  `${BACKEND_URL}/api/incoming-submissions?all=true`,
+  // status-filtered variants
+  `${BACKEND_URL}/api/admin-submissions?status=todo`,
+  `${BACKEND_URL}/api/admin-submissions?status=pending`,
+  `${BACKEND_URL}/api/submissions?status=todo`,
+  `${BACKEND_URL}/api/submissions?status=pending`,
+  `${BACKEND_URL}/api/submissions?status=new`,
+  `${BACKEND_URL}/api/submissions?status=to-do`,
+];
+
 
         let all = [];
 
@@ -347,7 +350,8 @@ export default function AdminStatistics() {
           const LIMIT = 200;
           let offset = 0;
           while (true) {
-            const url = `http://localhost:5050/api/admin-submissions?offset=${offset}&limit=${LIMIT}`;
+           const url = `${BACKEND_URL}/api/admin-submissions?offset=${offset}&limit=${LIMIT}`;
+
             const res = await fetch(url);
             if (!res.ok) break;
             const data = await res.json();
@@ -362,7 +366,8 @@ export default function AdminStatistics() {
         if (all.length === 0) {
           const LIMIT = 200;
           for (let page = 1; page <= 50; page++) {
-            const url = `http://localhost:5050/api/admin-submissions?page=${page}&limit=${LIMIT}`;
+           const url = `${BACKEND_URL}/api/admin-submissions?page=${page}&limit=${LIMIT}`;
+
             const res = await fetch(url);
             if (!res.ok) break;
             const data = await res.json();
@@ -375,7 +380,8 @@ export default function AdminStatistics() {
         // D) Base endpoint as final fallback
         if (all.length === 0) {
           try {
-            const res = await fetch('http://localhost:5050/api/admin-submissions');
+            const res = await fetch(`${BACKEND_URL}/api/admin-submissions`);
+
             if (res.ok) {
               const data = await res.json();
               if (Array.isArray(data)) all = all.concat(data);
@@ -415,9 +421,10 @@ export default function AdminStatistics() {
     (async () => {
       try {
         const tryAllUrls = [
-          'http://localhost:5050/api/mentor-activity?all=true',
-          'http://localhost:5050/api/mentor-activity?limit=5000',
-        ];
+  `${BACKEND_URL}/api/mentor-activity?all=true`,
+  `${BACKEND_URL}/api/mentor-activity?limit=5000`,
+];
+
         let all = [];
         let gotAll = false;
         for (const url of tryAllUrls) {
@@ -437,7 +444,7 @@ export default function AdminStatistics() {
           const LIMIT = 500;
           let offset = 0;
           while (true) {
-            const url = `http://localhost:5050/api/mentor-activity?offset=${offset}&limit=${LIMIT}`;
+           const url = `${BACKEND_URL}/api/mentor-activity?offset=${offset}&limit=${LIMIT}`;
             const res = await fetch(url);
             if (!res.ok) break;
             const data = await res.json();
@@ -448,7 +455,7 @@ export default function AdminStatistics() {
           }
         }
         if (all.length === 0) {
-          const res = await fetch('http://localhost:5050/api/mentor-activity');
+         const res = await fetch(`${BACKEND_URL}/api/mentor-activity`);
           const data = await res.json();
           if (Array.isArray(data)) all = data;
         }
