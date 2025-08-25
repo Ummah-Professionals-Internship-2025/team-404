@@ -10,6 +10,8 @@ import search_icon from '../assets/search_icon.svg';
 import Sidebar from './Sidebar';
 
 const SOFT_DELETE_KEY = 'softDeletedAdminSubmissions';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 
 /* =========================
    Helpers / Normalization
@@ -314,12 +316,14 @@ export default function AdminDashboard() {
   const fetchSubmissions = () => {
     setLoading(true);
 
-    const primaryUrl = 'http://localhost:5050/api/admin-submissions';
-    const fallbacks = [
-      'http://localhost:5050/api/submissions',
-      'http://localhost:5050/api/form-submissions',
-      'http://localhost:5050/api/all-submissions',
-    ];
+   
+const primaryUrl = `${BACKEND_URL}/api/admin-submissions`;
+const fallbacks = [
+  `${BACKEND_URL}/api/submissions`,
+  `${BACKEND_URL}/api/form-submissions`,
+  `${BACKEND_URL}/api/all-submissions`,
+];
+
 
     fetchJSON(primaryUrl)
       .then((primaryRaw) => {
@@ -338,11 +342,12 @@ export default function AdminDashboard() {
         });
       })
       .catch(() => {
-        return Promise.allSettled([
-          fetchJSON('http://localhost:5050/api/submissions'),
-          fetchJSON('http://localhost:5050/api/form-submissions'),
-          fetchJSON('http://localhost:5050/api/all-submissions'),
-        ])
+  return Promise.allSettled([
+    fetchJSON(`${BACKEND_URL}/api/submissions`),
+    fetchJSON(`${BACKEND_URL}/api/form-submissions`),
+    fetchJSON(`${BACKEND_URL}/api/all-submissions`),
+  ])
+
           .then((results) => {
             const extra = results
               .filter((r) => r.status === 'fulfilled' && Array.isArray(r.value))
@@ -383,7 +388,7 @@ export default function AdminDashboard() {
     }
     if (!window.confirm(`Are you sure you want to cancel the meeting for ${sub.name || 'this user'}?`)) return;
 
-    fetch('http://localhost:5050/api/cancel-meeting', {
+    fetch(`${BACKEND_URL}/api/cancel-meeting`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: sub.id }),
