@@ -164,6 +164,7 @@ try {
 }
 
 window.location.href = `${import.meta.env.VITE_FRONTEND_URL}/schedule-confirm?email=${mentorEmail}`;
+     }; 
 
 
   const renderTimePeriod = (periodName, times) => {
