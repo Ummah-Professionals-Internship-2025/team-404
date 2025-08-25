@@ -112,20 +112,19 @@ def cancel_meeting():
         student_name = row["name"]
         event_id = row["event_id"]
 
-        # ✅ Load Admin Token (with refresh_token) from credentials/admin_token.json
-        import os, json
-        from google.oauth2.credentials import Credentials
-        from googleapiclient.discovery import build
-
-        token_path = os.path.join(
-            os.path.dirname(__file__), "..", "credentials", "admin_token.json"
-        )
-        if not os.path.exists(token_path):
+               # ✅ Load Admin Token JSON from environment variable
+        import json
+        token_data = os.getenv("ADMIN_TOKEN_JSON")
+        if not token_data:
             conn.close()
-            return jsonify({"error": "Admin token not found. Run generate_admin_token.py first."}), 500
+            return jsonify({"error": "Admin token not set in environment"}), 500
 
-        with open(token_path, "r") as f:
-            token_data = json.load(f)
+        try:
+            token_data = json.loads(token_data)
+        except Exception:
+            conn.close()
+            return jsonify({"error": "Invalid ADMIN_TOKEN_JSON format"}), 500
+
 
         # ✅ Ensure refresh_token exists (requires new script with prompt='consent')
         creds = Credentials.from_authorized_user_info(token_data)
