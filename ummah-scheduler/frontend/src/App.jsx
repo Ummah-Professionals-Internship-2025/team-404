@@ -12,6 +12,7 @@ import Login from './components/Login';
 import LoginCallback from './components/LoginCallback';
 import AdminStatistics from './components/AdminStatistics';
 
+
 //Logos and SVGs
 import logo from './assets/white-horizontal.png'; 
 import filter_icon from './assets/filter_icon.svg';
@@ -21,6 +22,8 @@ import alarm_dark_icon from './assets/alarm_dark.svg';
 import light_mode_icon from './assets/light_mode.svg';
 import dark_mode_icon from './assets/dark_mode.svg';
 
+// Backend URL from Amplify env var
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 
 function RequireAuth({ children }) {
@@ -83,7 +86,7 @@ function Dashboard() {
 
   // Keep your original fetch logic, but as a function so we can reuse it for the 5-min refresh
   const loadSubmissions = () => {
-    fetch('http://localhost:5050/api/submissions')
+    fetch(`${BACKEND_URL}/api/submissions`) 
       .then((res) => res.json())
       .then((data) => {
         const submissionsWithDefaultStatus = data
@@ -622,7 +625,7 @@ function Dashboard() {
                 // ✅ Save to backend
                 const fullStudent = submissions.find(s => s.id === pendingItemId);
 
-                fetch('http://localhost:5050/api/save-status', {
+               fetch(`${BACKEND_URL}/api/save-status`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
