@@ -18,6 +18,7 @@ import light_mode_icon from '../assets/light_mode_blue.svg';
 import dark_mode_icon from '../assets/dark_mode_blue.svg';
 import Sidebar from './Sidebar';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
 
 
 ChartJS.register(
