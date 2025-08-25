@@ -1,7 +1,10 @@
 // src/components/ScheduleConfirm.jsx
-// src/components/ScheduleConfirm.jsx
+
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
+
 
 export default function ScheduleConfirm() {
   const navigate = useNavigate();
@@ -26,20 +29,19 @@ export default function ScheduleConfirm() {
       navigate("/");
       return;
     }
-
-    // 1️⃣ Fetch live student info
-    fetch('http://localhost:5050/api/submissions')
-      .then(res => res.json())
-      .then(data => {
-        const student = data.find((s) => s.id === studentId);
-        if (!student) {
-          alert("❌ Student not found in submissions.");
-          navigate("/");
-          return;
-        }
+// 1️⃣ Fetch live student info
+fetch(`${BACKEND_URL}/api/submissions`)
+  .then(res => res.json())
+  .then(data => {
+    const student = data.find((s) => s.id === studentId);
+    if (!student) {
+      alert("❌ Student not found in submissions.");
+      navigate("/");
+      return;
+    }
 
         // 2️⃣ Schedule Google Calendar meeting
-        fetch("http://localhost:5050/api/schedule-meeting", {
+        fetch(`${BACKEND_URL}/api/schedule-meeting`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -58,7 +60,7 @@ export default function ScheduleConfirm() {
             }
 
             // 3️⃣ Save status to JSON + SQLite
-            return fetch('http://localhost:5050/api/save-status', {
+            return fetch(`${BACKEND_URL}/api/save-status`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
