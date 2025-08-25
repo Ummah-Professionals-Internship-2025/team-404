@@ -23,6 +23,9 @@ DISCORD_FINANCE_WEBHOOK     = os.getenv("DISCORD_FINANCE_WEBHOOK")
 DISCORD_IT_WEBHOOK          = os.getenv("DISCORD_IT_WEBHOOK")
 DISCORD_LAW_WEBHOOK         = os.getenv("DISCORD_LAW_WEBHOOK")
 
+#  Frontend URL for clickable scheduler link
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+
 # Debug print to confirm .env loading
 print("MONDAY_API_KEY:", MONDAY_API_KEY)
 print("MONDAY_BOARD_ID:", MONDAY_BOARD_ID)
@@ -33,6 +36,7 @@ print("DISCORD_ENGINEERING_WEBHOOK:", DISCORD_ENGINEERING_WEBHOOK)
 print("DISCORD_FINANCE_WEBHOOK:", DISCORD_FINANCE_WEBHOOK)
 print("DISCORD_IT_WEBHOOK:", DISCORD_IT_WEBHOOK )
 print("DISCORD_LAW_WEBHOOK:", DISCORD_LAW_WEBHOOK)
+print("FRONTEND_URL:", FRONTEND_URL)
 
 MONDAY_API = "https://api.monday.com/v2"
 
@@ -101,7 +105,7 @@ def post_to_discord(item):
         f"**Preferred Times:** {columns.get('project_timeline', 'N/A')}\n"
         f"**Other Info:** {columns.get('text9', 'N/A')}\n"
         f"**Submitted:** {columns.get('last_updated', item['created_at'])}\n"
-        f"[ View in Scheduler Tool](https://our-scheduler-url.com/goes/here)\n"
+        f"[ View in Scheduler Tool]({FRONTEND_URL})\n"
     )
 
     posted_to_industry = False
@@ -127,7 +131,7 @@ def post_to_discord(item):
               r.raise_for_status()
               posted_to_industry = True
 
-          # If no matching industry webhook was used, post to general (this is just a temporary measure, we'll have every channel correspond to an industry option)
+    # If no matching industry webhook was used, post to general
     if not posted_to_industry:
               print(f"No matching industry found. Posting to general channel.")
               r = requests.post(DISCORD_GENERAL_WEBHOOK, json={"content": content})
