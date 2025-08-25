@@ -10,6 +10,8 @@ import light_mode_icon from '../assets/light_mode.svg';
 import dark_mode_icon from '../assets/dark_mode.svg';
 import Sidebar from "./Sidebar";
 import FollowUpModal from "./FollowUpModal";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 
 export default function FollowUp() {
   const [doneSubmissions, setDoneSubmissions] = useState([]);
@@ -43,7 +45,8 @@ export default function FollowUp() {
   // --- data fetch with loading state ---
   useEffect(() => {
     setLoading(true);
-    fetch("http://localhost:5050/api/followup")
+   fetch(`${BACKEND_URL}/api/followup`)
+
       .then((res) => res.json())
       .then((data) => {
         const deletedIds = JSON.parse(
@@ -183,21 +186,21 @@ export default function FollowUp() {
       (!selectedProfession || item.industry === selectedProfession)
   );
 
-  // Handle propose meeting from modal
-  const handleProposeMeeting = (dateTime) => {
-    if (!selected) return;
+ // Handle propose meeting from modal
+const handleProposeMeeting = (dateTime) => {
+  if (!selected) return;
 
-    sessionStorage.setItem("studentId", selected.id);
-    sessionStorage.setItem("meetingTime", dateTime.toISOString());
-    sessionStorage.setItem("fromFollowUp", "true");
+  sessionStorage.setItem("studentId", selected.id);
+  sessionStorage.setItem("meetingTime", dateTime.toISOString());
+  sessionStorage.setItem("fromFollowUp", "true");
 
-    const me = sessionStorage.getItem("mentorEmail") || mentorEmail;
-    if (!me) {
-      window.location.href = "http://localhost:5050/auth/login";
-      return;
-    }
-    window.location.href = `http://localhost:5173/schedule-confirm?email=${me}`;
-  };
+  const me = sessionStorage.getItem("mentorEmail") || mentorEmail;
+  if (!me) {
+    window.location.href = `${BACKEND_URL}/auth/login`;
+    return;
+  }
+  window.location.href = `${BACKEND_URL.replace('/api', '')}/schedule-confirm?email=${me}`;
+};   
 
 
   return (
