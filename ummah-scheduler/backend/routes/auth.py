@@ -17,9 +17,6 @@ os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # Enable HTTP for localhost tes
 # In-memory token storage: { email: credentials }
 mentor_tokens = {}
 
-CLIENT_SECRETS_FILE = str(
-    pathlib.Path(__file__).resolve().parent.parent / "credentials" / "oauth_client_secret.json"
-)
 SCOPES = [
     "https://www.googleapis.com/auth/calendar.events",
     "https://www.googleapis.com/auth/calendar",
@@ -30,15 +27,41 @@ SCOPES = [
 ]
 
 # ----------------------------
+# HELPER: Build Flow from env vars or JSON
+# ----------------------------
+def build_flow(redirect_path: str):
+    """Use env vars on Render, or JSON locally."""
+    client_id = os.getenv("GOOGLE_CLIENT_ID")
+    client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
+    redirect_uri = f"{BACKEND_URL}{redirect_path}"
+
+    if client_id and client_secret:
+        client_config = {
+            "web": {
+                "client_id": client_id,
+                "project_id": os.getenv("GOOGLE_PROJECT_ID", "ummah-scheduler"),
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                "client_secret": client_secret,
+                "redirect_uris": [redirect_uri],
+                "javascript_origins": [FRONTEND_URL, BACKEND_URL],
+            }
+        }
+        return Flow.from_client_config(client_config, scopes=SCOPES, redirect_uri=redirect_uri)
+    else:
+        CLIENT_SECRETS_FILE = str(
+            pathlib.Path(__file__).resolve().parent.parent / "credentials" / "oauth_client_secret.json"
+        )
+        return Flow.from_client_secrets_file(CLIENT_SECRETS_FILE, scopes=SCOPES, redirect_uri=redirect_uri)
+
+
+# ----------------------------
 # CLEAN LOGIN (DEFAULT)
 # ----------------------------
 @auth_bp.route("/auth/login-basic")
 def login_basic():
-    flow = Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE,
-        scopes=SCOPES,
-        redirect_uri=f"{BACKEND_URL}/oauth2callback"
-    )
+    flow = build_flow("/oauth2callback")
     auth_url, _ = flow.authorization_url(
         prompt="consent",
         access_type="offline",
@@ -53,11 +76,7 @@ def login_basic():
 # ----------------------------
 @auth_bp.route("/auth/login")
 def login_schedule():
-    flow = Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE,
-        scopes=SCOPES,
-        redirect_uri=f"{BACKEND_URL}/oauth2callback"
-    )
+    flow = build_flow("/oauth2callback")
     auth_url, _ = flow.authorization_url(
         prompt="consent",
         access_type="offline",
@@ -72,11 +91,7 @@ def login_schedule():
 # ----------------------------
 @auth_bp.route("/oauth2callback")
 def oauth2callback():
-    flow = Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE,
-        scopes=SCOPES,
-        redirect_uri=f"{BACKEND_URL}/oauth2callback"
-    )
+    flow = build_flow("/oauth2callback")
     flow.fetch_token(authorization_response=request.url)
 
     credentials = flow.credentials
@@ -104,11 +119,7 @@ def oauth2callback():
 # ----------------------------
 @auth_bp.route("/auth/login-message")
 def login_message():
-    flow = Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE,
-        scopes=SCOPES,
-        redirect_uri=f"{BACKEND_URL}/oauth2callback"
-    )
+    flow = build_flow("/oauth2callback")
     auth_url, _ = flow.authorization_url(
         prompt="consent",
         access_type="offline",
@@ -147,11 +158,7 @@ def credentials_to_dict(creds):
 # ----------------------------
 @auth_bp.route("/auth/admin-login")
 def admin_google_login():
-    flow = Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE,
-        scopes=SCOPES,
-        redirect_uri=f"{BACKEND_URL}/oauth2callback-admin"
-    )
+    flow = build_flow("/oauth2callback-admin")
     auth_url, _ = flow.authorization_url(
         prompt="consent",
         access_type="offline",
@@ -169,11 +176,7 @@ def admin_google_login():
 
 @auth_bp.route("/oauth2callback-admin")
 def admin_oauth2callback():
-    flow = Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE,
-        scopes=SCOPES,
-        redirect_uri=f"{BACKEND_URL}/oauth2callback-admin"
-    )
+    flow = build_flow("/oauth2callback-admin")
     flow.fetch_token(authorization_response=request.url)
 
     credentials = flow.credentials
