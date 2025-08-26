@@ -6,6 +6,7 @@ Designed for GitHub Actions: runs once per execution and exits.
 import os, requests
 from dotenv import load_dotenv
 from pathlib import Path
+from datetime import datetime, timedelta
 
 # load keys from .env (only needed locally; in Actions you'll use secrets)
 load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / '.env')
@@ -108,12 +109,26 @@ def post_to_discord(item):
         print(f"✅ Posted {item['id']} to general channel")
 
 if __name__ == "__main__":
-    print("🔄 Running Monday → Discord sync (one-time run)")
+    print("🔄 Running Monday → Discord sync (new items only)")
     try:
         items = get_latest_items()
+        print(f"📦 Pulled {len(items)} items from Monday")
+
+        # Only keep ones from the last 10 minutes
+        cutoff = datetime.utcnow() - timedelta(minutes=10)
+        recent_items = []
         for itm in items:
+            created_at = datetime.fromisoformat(itm["created_at"].replace("Z", ""))
+            if created_at > cutoff:
+                recent_items.append(itm)
+
+        print(f"🆕 Found {len(recent_items)} new items to post")
+
+        for itm in recent_items:
             post_to_discord(itm)
+
     except Exception as e:
         print("❌ Error:", e)
-    print(" Done. Exiting.")
+    print("✅ Done. Exiting.")
+
 
