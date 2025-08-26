@@ -1,14 +1,15 @@
 """
-Pull the newest items from a Monday.com board and post them
-to a Discord channel via webhook.
+Pull new submissions from a Monday.com board and post them
+to Discord channels via webhook.
+Only posts items that have never been sent before.
+Keeps messages short to avoid truncation.
 Designed for GitHub Actions: runs once per execution and exits.
 """
-import os, requests
+import os, requests, json
 from dotenv import load_dotenv
 from pathlib import Path
-from datetime import datetime, timedelta
 
-# load keys from .env (only needed locally; in Actions you'll use secrets)
+# Load keys from .env (only needed locally; in Actions you'll use secrets)
 load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / '.env')
 
 # Variables
@@ -26,13 +27,27 @@ DISCORD_LAW_WEBHOOK         = os.getenv("DISCORD_LAW_WEBHOOK")
 # Frontend URL for clickable scheduler link
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
-# Debug print to confirm env
+# File to persist seen item IDs between runs
+SEEN_FILE = Path(__file__).resolve().parent / "seen_items.json"
+
 print("🔑 MONDAY_BOARD_ID:", MONDAY_BOARD_ID)
 print("🔗 FRONTEND_URL:", FRONTEND_URL)
 
 MONDAY_API = "https://api.monday.com/v2"
 
-def get_latest_items(limit: int = 20):
+def load_seen_ids():
+    """Load previously posted item IDs"""
+    if SEEN_FILE.exists():
+        with open(SEEN_FILE, "r") as f:
+            return set(json.load(f))
+    return set()
+
+def save_seen_ids(ids):
+    """Save updated set of posted item IDs"""
+    with open(SEEN_FILE, "w") as f:
+        json.dump(list(ids), f)
+
+def get_latest_items(limit: int = 100):
     """Pull most recent items from Monday board"""
     query = f"""
     query {{
@@ -58,7 +73,22 @@ def get_latest_items(limit: int = 20):
         json={"query": query}
     )
     resp.raise_for_status()
-    return resp.json()["data"]["boards"][0]["items_page"]["items"]
+    data = resp.json()
+    if "errors" in data:
+        raise Exception(f"Monday API error: {data['errors']}")
+    return data["data"]["boards"][0]["items_page"]["items"]
+
+def safe_post(url, content, industry, item_id):
+    """Safe wrapper to post to Discord"""
+    if not url or not url.startswith("https://discord.com/api/webhooks/"):
+        print(f"⚠️ Skipping invalid webhook for {industry} (item {item_id}) → url={repr(url)}")
+        return
+    try:
+        resp = requests.post(url.strip(), json={"content": content})
+        resp.raise_for_status()
+        print(f"✅ Posted {item_id} to {industry} channel")
+    except Exception as e:
+        print(f"❌ Error posting {item_id} to {industry} → {e}")
 
 def post_to_discord(item):
     """Send a short Monday item to the right Discord channel"""
@@ -66,7 +96,7 @@ def post_to_discord(item):
     industry_str = columns.get("dropdown_mksazheg", "N/A")
     industries = [i.strip() for i in industry_str.split(",")] if industry_str and industry_str != "N/A" else []
 
-    # Keep message short to avoid Discord truncation
+    # Compact message — avoids Discord truncation
     content = (
         f"**New Career-Prep Submission**\n"
         f"**Name:** {item['name']}\n"
@@ -93,32 +123,27 @@ def post_to_discord(item):
             url = DISCORD_LAW_WEBHOOK
 
         if url:
-            requests.post(url, json={"content": content}).raise_for_status()
+            safe_post(url, content, industry, item["id"])
             posted_to_industry = True
-            print(f"✅ Posted {item['id']} to {industry} channel")
 
     if not posted_to_industry:
-        requests.post(DISCORD_GENERAL_WEBHOOK, json={"content": content}).raise_for_status()
-        print(f"✅ Posted {item['id']} to general channel")
+        safe_post(DISCORD_GENERAL_WEBHOOK, content, "general", item["id"])
 
 if __name__ == "__main__":
-    print("🔄 Running Monday → Discord sync (new items only)")
+    print("🔄 Running Monday → Discord sync (new unique items only)")
     try:
+        seen_ids = load_seen_ids()
         items = get_latest_items()
         print(f"📦 Pulled {len(items)} items from Monday")
 
-        # Only keep ones from the last 10 minutes
-        cutoff = datetime.utcnow() - timedelta(minutes=10)
-        recent_items = []
-        for itm in items:
-            created_at = datetime.fromisoformat(itm["created_at"].replace("Z", ""))
-            if created_at > cutoff:
-                recent_items.append(itm)
+        new_items = [itm for itm in items if itm["id"] not in seen_ids]
+        print(f"🆕 Found {len(new_items)} unseen items to post")
 
-        print(f"🆕 Found {len(recent_items)} new items to post")
-
-        for itm in recent_items:
+        for itm in new_items:
             post_to_discord(itm)
+            seen_ids.add(itm["id"])
+
+        save_seen_ids(seen_ids)
 
     except Exception as e:
         print("❌ Error:", e)
