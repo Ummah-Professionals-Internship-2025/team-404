@@ -5,7 +5,10 @@ Only posts items that have never been sent before.
 Keeps messages short to avoid truncation.
 Designed for GitHub Actions: runs once per execution and exits.
 """
-import os, requests, json
+
+import os
+import requests
+import json
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -16,7 +19,7 @@ load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / '.env')
 MONDAY_API_KEY  = os.getenv("MONDAY_API_KEY")
 MONDAY_BOARD_ID = os.getenv("MONDAY_BOARD_ID")
 
-DISCORD_GENERAL_WEBHOOK     = os.getenv("DISCORD_GENERAL_WEBHOOK") 
+DISCORD_GENERAL_WEBHOOK     = os.getenv("DISCORD_GENERAL_WEBHOOK")
 DISCORD_BUSINESS_WEBHOOK    = os.getenv("DISCORD_BUSINESS_WEBHOOK")
 DISCORD_EDUCATION_WEBHOOK   = os.getenv("DISCORD_EDUCATION_WEBHOOK")
 DISCORD_ENGINEERING_WEBHOOK = os.getenv("DISCORD_ENGINEERING_WEBHOOK")
@@ -35,6 +38,7 @@ print("🔗 FRONTEND_URL:", FRONTEND_URL)
 
 MONDAY_API = "https://api.monday.com/v2"
 
+
 def load_seen_ids():
     """Load previously posted item IDs"""
     if SEEN_FILE.exists():
@@ -42,10 +46,12 @@ def load_seen_ids():
             return set(json.load(f))
     return set()
 
+
 def save_seen_ids(ids):
     """Save updated set of posted item IDs"""
     with open(SEEN_FILE, "w") as f:
         json.dump(list(ids), f)
+
 
 def get_latest_items(limit: int = 100):
     """Pull most recent items from Monday board"""
@@ -78,6 +84,7 @@ def get_latest_items(limit: int = 100):
         raise Exception(f"Monday API error: {data['errors']}")
     return data["data"]["boards"][0]["items_page"]["items"]
 
+
 def safe_post(url, content, industry, item_id):
     """Safe wrapper to post to Discord"""
     if not url or not url.startswith("https://discord.com/api/webhooks/"):
@@ -89,6 +96,7 @@ def safe_post(url, content, industry, item_id):
         print(f"✅ Posted {item_id} to {industry} channel")
     except Exception as e:
         print(f"❌ Error posting {item_id} to {industry} → {e}")
+
 
 def post_to_discord(item):
     """Send a short Monday item to the right Discord channel"""
@@ -129,6 +137,7 @@ def post_to_discord(item):
     if not posted_to_industry:
         safe_post(DISCORD_GENERAL_WEBHOOK, content, "general", item["id"])
 
+
 if __name__ == "__main__":
     print("🔄 Running Monday → Discord sync (new unique items only)")
     try:
@@ -147,4 +156,5 @@ if __name__ == "__main__":
 
     except Exception as e:
         print("❌ Error:", e)
+
     print("✅ Done. Exiting.")
