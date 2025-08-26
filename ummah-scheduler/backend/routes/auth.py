@@ -173,7 +173,6 @@ def admin_google_login():
     }
     return redirect(auth_url)
 
-
 @auth_bp.route("/oauth2callback-admin")
 def admin_oauth2callback():
     flow = build_flow("/oauth2callback-admin")
@@ -185,7 +184,7 @@ def admin_oauth2callback():
 
     admin_email = user_info.get("email")
 
-    #  Support multiple admin emails (comma-separated in env var)
+    # Support multiple admin emails (comma-separated in env var)
     allowed_emails = os.getenv("ADMIN_GOOGLE_EMAILS", "").split(",")
     allowed_emails = [e.strip() for e in allowed_emails if e.strip()]
 
