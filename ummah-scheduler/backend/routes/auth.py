@@ -184,9 +184,12 @@ def admin_oauth2callback():
     user_info = user_service.userinfo().get().execute()
 
     admin_email = user_info.get("email")
-    allowed_email = os.getenv("ADMIN_GOOGLE_EMAIL")
 
-    if admin_email != allowed_email:
+    #  Support multiple admin emails (comma-separated in env var)
+    allowed_emails = os.getenv("ADMIN_GOOGLE_EMAILS", "").split(",")
+    allowed_emails = [e.strip() for e in allowed_emails if e.strip()]
+
+    if admin_email not in allowed_emails:
         return "Unauthorized", 403
 
     session["adminLoggedIn"] = True
