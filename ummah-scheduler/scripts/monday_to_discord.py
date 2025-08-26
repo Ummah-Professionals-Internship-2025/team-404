@@ -2,7 +2,7 @@
 Pull new submissions from a Monday.com board and post them
 to Discord channels via webhook.
 Only posts items that have never been sent before.
-Keeps messages short to avoid truncation.
+Uses public_url for resumes so they download directly.
 Designed for GitHub Actions: runs once per execution and exits.
 """
 import os, requests, json
@@ -78,6 +78,18 @@ def get_latest_items(limit: int = 100):
         raise Exception(f"Monday API error: {data['errors']}")
     return data["data"]["boards"][0]["items_page"]["items"]
 
+def extract_resume_url(raw_val):
+    """Parse Monday file column JSON and return direct public URL"""
+    if not raw_val:
+        return "N/A"
+    try:
+        file_data = json.loads(raw_val)
+        if isinstance(file_data, list) and len(file_data) > 0:
+            return file_data[0].get("public_url") or file_data[0].get("url", "N/A")
+    except Exception:
+        pass
+    return "N/A"
+
 def safe_post(url, content, industry, item_id):
     """Safe wrapper to post to Discord"""
     if not url or not url.startswith("https://discord.com/api/webhooks/"):
@@ -90,25 +102,12 @@ def safe_post(url, content, industry, item_id):
     except Exception as e:
         print(f"❌ Error posting {item_id} to {industry} → {e}")
 
-def extract_resume_url(raw_val):
-    """Parse Monday file column JSON and return direct URL"""
-    if not raw_val:
-        return "N/A"
-    try:
-        file_data = json.loads(raw_val)
-        if isinstance(file_data, list) and len(file_data) > 0:
-            return file_data[0].get("url", "N/A")
-    except Exception:
-        pass
-    return "N/A"
-
 def post_to_discord(item):
     """Send a short Monday item to the right Discord channel"""
     columns = {c["id"]: c.get("text", "") for c in item["column_values"]}
     industry_str = columns.get("dropdown_mksazheg", "N/A")
     industries = [i.strip() for i in industry_str.split(",")] if industry_str and industry_str != "N/A" else []
 
-    # Proper resume parsing
     resume_url = extract_resume_url(columns.get("files_1"))
 
     # Compact message — avoids Discord truncation
@@ -163,3 +162,4 @@ if __name__ == "__main__":
     except Exception as e:
         print("❌ Error:", e)
     print("✅ Done. Exiting.")
+
