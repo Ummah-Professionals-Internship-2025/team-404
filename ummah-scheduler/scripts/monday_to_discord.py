@@ -114,17 +114,20 @@ if __name__ == "__main__":
         items = get_latest_items()
         print(f"📦 Pulled {len(items)} items from Monday")
 
-        # Debug: print all item timestamps
+        # Debug: print all timestamps
         for itm in items:
-            print("➡️ Item:", itm["id"], itm["name"], "created_at:", itm["created_at"])
+            last_updated = next((c["text"] for c in itm["column_values"] if c["id"] == "last_updated" and c.get("text")), None)
+            print("➡️ Item:", itm["id"], itm["name"], 
+                  "created_at:", itm["created_at"], 
+                  "last_updated:", last_updated)
 
-        # Only keep ones from the last 10 minutes (with last_updated fallback)
+        # Only keep ones from the last 10 minutes (use last_updated if available)
         cutoff = datetime.utcnow() - timedelta(minutes=10)
         recent_items = []
         for itm in items:
             created_at = datetime.fromisoformat(itm["created_at"].replace("Z", ""))
 
-            # Try last_updated from column_values if present
+            # Try last_updated from column_values
             last_updated_str = next((c["text"] for c in itm["column_values"] if c["id"] == "last_updated" and c.get("text")), None)
             last_updated = None
             if last_updated_str:
