@@ -78,6 +78,18 @@ def get_latest_items(limit: int = 100):
         raise Exception(f"Monday API error: {data['errors']}")
     return data["data"]["boards"][0]["items_page"]["items"]
 
+def safe_post(url, content, industry, item_id):
+    """Safe wrapper to post to Discord and debug which webhook fails"""
+    if not url or not url.startswith("https://discord.com/api/webhooks/"):
+        print(f"⚠️ Skipping invalid webhook for {industry} (item {item_id}) → url={repr(url)}")
+        return
+    try:
+        resp = requests.post(url.strip(), json={"content": content})
+        resp.raise_for_status()
+        print(f"✅ Posted {item_id} to {industry} channel")
+    except Exception as e:
+        print(f"❌ Error posting {item_id} to {industry} channel → {e}")
+
 def post_to_discord(item):
     """Send a Monday item to the right Discord channel"""
     columns = {c["id"]: c.get("text", "") for c in item["column_values"]}
@@ -118,13 +130,11 @@ def post_to_discord(item):
             url = DISCORD_LAW_WEBHOOK
 
         if url:
-            requests.post(url, json={"content": content}).raise_for_status()
+            safe_post(url, content, industry, item['id'])
             posted_to_industry = True
-            print(f"✅ Posted {item['id']} to {industry} channel")
 
     if not posted_to_industry:
-        requests.post(DISCORD_GENERAL_WEBHOOK, json={"content": content}).raise_for_status()
-        print(f"✅ Posted {item['id']} to general channel")
+        safe_post(DISCORD_GENERAL_WEBHOOK, content, "general", item['id'])
 
 if __name__ == "__main__":
     print("🔄 Running Monday → Discord sync (new unique items only)")
@@ -145,3 +155,4 @@ if __name__ == "__main__":
     except Exception as e:
         print("❌ Error:", e)
     print("✅ Done. Exiting.")
+
