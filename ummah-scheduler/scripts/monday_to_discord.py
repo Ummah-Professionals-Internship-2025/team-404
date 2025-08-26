@@ -32,12 +32,12 @@ print("🔗 FRONTEND_URL:", FRONTEND_URL)
 
 MONDAY_API = "https://api.monday.com/v2"
 
-def get_latest_items(limit: int = 20):
-    """Pull most recent items from Monday board"""
+def get_latest_items(limit: int = 100):
+    """Pull most recent items from Monday board, newest first"""
     query = f"""
     query {{
       boards(ids: [{MONDAY_BOARD_ID}]) {{
-        items_page(limit: {limit}) {{
+        items_page(limit: {limit}, sort_by: created_at, order: desc) {{
           items {{
             id
             name
@@ -114,32 +114,12 @@ if __name__ == "__main__":
         items = get_latest_items()
         print(f"📦 Pulled {len(items)} items from Monday")
 
-        # Debug: print all timestamps
-        for itm in items:
-            last_updated = next((c["text"] for c in itm["column_values"] if c["id"] == "last_updated" and c.get("text")), None)
-            print("➡️ Item:", itm["id"], itm["name"], 
-                  "created_at:", itm["created_at"], 
-                  "last_updated:", last_updated)
-
-        # Only keep ones from the last 10 minutes (use last_updated if available)
+        # Only keep ones from the last 10 minutes
         cutoff = datetime.utcnow() - timedelta(minutes=10)
         recent_items = []
         for itm in items:
             created_at = datetime.fromisoformat(itm["created_at"].replace("Z", ""))
-
-            # Try last_updated from column_values
-            last_updated_str = next((c["text"] for c in itm["column_values"] if c["id"] == "last_updated" and c.get("text")), None)
-            last_updated = None
-            if last_updated_str:
-                try:
-                    last_updated = datetime.fromisoformat(last_updated_str.replace("Z", ""))
-                except Exception:
-                    pass
-
-            effective_time = last_updated or created_at
-            print(f"⏱️ Checking item {itm['id']} → effective_time={effective_time}, cutoff={cutoff}")
-
-            if effective_time > cutoff:
+            if created_at > cutoff:
                 recent_items.append(itm)
 
         print(f"🆕 Found {len(recent_items)} new items to post")
