@@ -2,12 +2,12 @@
 Pull new submissions from a Monday.com board and post them
 to Discord channels via webhook.
 Only posts items that have never been sent before.
+Truncates messages >2000 chars to satisfy Discord API limits.
 Designed for GitHub Actions: runs once per execution and exits.
 """
 import os, requests, json
 from dotenv import load_dotenv
 from pathlib import Path
-import hashlib
 
 # Load keys from .env (only needed locally; in Actions you'll use secrets)
 load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / '.env')
@@ -35,6 +35,7 @@ print("🔑 MONDAY_BOARD_ID:", MONDAY_BOARD_ID)
 print("🔗 FRONTEND_URL:", FRONTEND_URL)
 
 MONDAY_API = "https://api.monday.com/v2"
+MAX_DISCORD_LEN = 2000
 
 def load_seen_ids():
     """Load previously posted item IDs"""
@@ -80,18 +81,21 @@ def get_latest_items(limit: int = 100):
     return data["data"]["boards"][0]["items_page"]["items"]
 
 def safe_post(url, content, industry, item_id):
-    """Safe wrapper to post to Discord and debug which webhook fails"""
+    """Safe wrapper to post to Discord with debug + truncation"""
     if not url or not url.startswith("https://discord.com/api/webhooks/"):
         print(f"⚠️ Skipping invalid webhook for {industry} (item {item_id}) → url={repr(url)}")
         return
     try:
-        url_hash = hashlib.md5(url.encode()).hexdigest()[:6]  # short hash to ID the webhook
-        print(f"➡️ Posting item {item_id} to {industry} (webhook hash={url_hash}, len={len(content)})")
+        # truncate if needed
+        if len(content) > MAX_DISCORD_LEN:
+            print(f"⚠️ Item {item_id} message too long ({len(content)} chars). Truncating.")
+            content = content[:MAX_DISCORD_LEN - 20] + "\n...(truncated)"
         resp = requests.post(url.strip(), json={"content": content})
         resp.raise_for_status()
-        print(f"✅ Posted {item_id} to {industry} channel")
+        print(f"✅ Posted {item_id} to {industry} channel (len={len(content)})")
     except Exception as e:
-        print(f"❌ Error posting {item_id} to {industry} (hash={url_hash}) → {e}")
+        print(f"❌ Error posting {item_id} to {industry} → {e}")
+
 def post_to_discord(item):
     """Send a Monday item to the right Discord channel"""
     columns = {c["id"]: c.get("text", "") for c in item["column_values"]}
@@ -132,11 +136,11 @@ def post_to_discord(item):
             url = DISCORD_LAW_WEBHOOK
 
         if url:
-            safe_post(url, content, industry, item['id'])
+            safe_post(url, content, industry, item["id"])
             posted_to_industry = True
 
     if not posted_to_industry:
-        safe_post(DISCORD_GENERAL_WEBHOOK, content, "general", item['id'])
+        safe_post(DISCORD_GENERAL_WEBHOOK, content, "general", item["id"])
 
 if __name__ == "__main__":
     print("🔄 Running Monday → Discord sync (new unique items only)")
