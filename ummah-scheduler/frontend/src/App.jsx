@@ -1,5 +1,5 @@
 // src/App.jsx
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'; /*bingus*/
 import { useEffect, useState } from 'react';
 import './App.css';
 import DashboardModal from './components/DashboardModal';
