@@ -7,6 +7,7 @@ Designed for GitHub Actions: runs once per execution and exits.
 import os, requests, json
 from dotenv import load_dotenv
 from pathlib import Path
+import hashlib
 
 # Load keys from .env (only needed locally; in Actions you'll use secrets)
 load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / '.env')
@@ -84,12 +85,13 @@ def safe_post(url, content, industry, item_id):
         print(f"⚠️ Skipping invalid webhook for {industry} (item {item_id}) → url={repr(url)}")
         return
     try:
+        url_hash = hashlib.md5(url.encode()).hexdigest()[:6]  # short hash to ID the webhook
+        print(f"➡️ Posting item {item_id} to {industry} (webhook hash={url_hash}, len={len(content)})")
         resp = requests.post(url.strip(), json={"content": content})
         resp.raise_for_status()
         print(f"✅ Posted {item_id} to {industry} channel")
     except Exception as e:
-        print(f"❌ Error posting {item_id} to {industry} channel → {e}")
-
+        print(f"❌ Error posting {item_id} to {industry} (hash={url_hash}) → {e}")
 def post_to_discord(item):
     """Send a Monday item to the right Discord channel"""
     columns = {c["id"]: c.get("text", "") for c in item["column_values"]}
