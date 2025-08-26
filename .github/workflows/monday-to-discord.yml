@@ -1,6 +1,4 @@
 
-
-
 name: Monday → Discord Notifications
 
 on:
@@ -27,6 +25,7 @@ jobs:
           pip install requests python-dotenv
 
       - name: Run Monday → Discord script
+        working-directory: ./scripts
         env:
           MONDAY_API_KEY: ${{ secrets.MONDAY_API_KEY }}
           MONDAY_BOARD_ID: ${{ secrets.MONDAY_BOARD_ID }}
