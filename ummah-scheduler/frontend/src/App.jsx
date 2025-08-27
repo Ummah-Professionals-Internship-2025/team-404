@@ -578,7 +578,7 @@ function Dashboard() {
       </div>
 
       {selected && (
-        <div className="dashboard-modal-overlay" onClick={() => setSelected(null)}>
+        <div className="modal-overlay" onClick={() => setSelected(null)}>
           <DashboardModal
             student={selected}
             onClose={() => setSelected(null)}
@@ -599,7 +599,7 @@ function Dashboard() {
       )}
 
       {showNameModal && (
-        <div className="dashboard-modal-overlay" onClick={() => setShowNameModal(false)}>
+        <div className="modal-overlay" onClick={() => setShowNameModal(false)}>
           <div className={`modal-content name-modal ${theme === 'dark' ? 'theme-dark' : ''}`} onClick={(e) => e.stopPropagation()}>
             <form
               onSubmit={(e) => {
