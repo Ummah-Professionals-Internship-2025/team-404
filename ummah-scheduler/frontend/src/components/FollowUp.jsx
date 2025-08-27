@@ -406,7 +406,7 @@ const handleProposeMeeting = (dateTime) => {
 
       {/* Use the new DashboardModal-based modal */}
       {selected && (
-        <div className="dashboard-modal-overlay" onClick={() => setSelected(null)}>
+        <div className="modal-overlay" onClick={() => setSelected(null)}>
           <FollowUpModal
             student={selected}
             onClose={() => setSelected(null)}
