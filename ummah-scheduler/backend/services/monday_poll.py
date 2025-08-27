@@ -1,5 +1,3 @@
-
-# services/monday_poll.py
 import os
 import requests
 from dotenv import load_dotenv
