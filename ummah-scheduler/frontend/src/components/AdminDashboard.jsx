@@ -223,7 +223,7 @@ const availabilityToMap = (txt) => {
   return map;
 };
 
-// uniform "N/A" display
+// uniform “N/A” display
 const displayNA = (v) => {
   const s = (v ?? '').toString().trim();
   return s ? s : 'N/A';
@@ -237,8 +237,6 @@ export default function AdminDashboard() {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const PAGE_SIZE = 10;
 
   // menu / soft-delete
   const [menuOpen, setMenuOpen] = useState(false);
@@ -435,7 +433,7 @@ const fallbacks = [
   const visibleSubmissions = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     const norm = (s) => (s || '').toLowerCase().trim();
-    const filtered = submissions.filter((s) => {
+    return submissions.filter((s) => {
       const sStatus = canonicalStatus(s.status);
       const statusOk = statusFilter === 'All' || sStatus === canonicalStatus(statusFilter);
       const profOk = professionFilter === 'All' || (s.industry || '') === professionFilter;
@@ -447,22 +445,7 @@ const fallbacks = [
         norm(s.pickedBy).includes(q);
       return statusOk && profOk && searchOk;
     });
-    return filtered;
   }, [submissions, searchQuery, professionFilter, statusFilter]);
-
-  // Reset to page 1 whenever the visible set changes
-  useEffect(() => { setCurrentPage(1); }, [searchQuery, professionFilter, statusFilter, submissions.length]);
-
-  const pageCount = Math.max(1, Math.ceil(visibleSubmissions.length / PAGE_SIZE));
-  const pagedSubmissions = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE;
-    return visibleSubmissions.slice(start, start + PAGE_SIZE);
-  }, [visibleSubmissions, currentPage]);
-
-  const goToPage = (p) => {
-    const clamped = Math.min(pageCount, Math.max(1, p));
-    setCurrentPage(clamped);
-  };
 
   /* =========================
      Render
@@ -621,7 +604,7 @@ const fallbacks = [
           <>
             <p className="dashboard-hint">Submissions are shown from most recent to oldest.</p>
             <div className="submission-list">
-              {pagedSubmissions.map((sub) => {
+              {visibleSubmissions.map((sub) => {
                 const status = canonicalStatus(sub.status);
                 return (
                   <div
@@ -689,29 +672,13 @@ const fallbacks = [
                 );
               })}
             </div>
-
-            {/* Pagination controls */}
-            <div className="pagination">
-              <button className="pagination-btn pagination-nav-first" onClick={() => goToPage(1)} disabled={currentPage === 1}>First</button>
-              <button className="pagination-btn pagination-nav-prev" onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>←</button>
-              {Array.from({ length: pageCount }, (_, i) => i + 1)
-                .slice(
-                  Math.max(0, Math.min(currentPage - 3, pageCount - 5)),
-                  Math.max(5, Math.min(pageCount, currentPage + 2))
-                )
-                .map((p) => (
-                  <button key={p} className={`pagination-btn ${p === currentPage ? 'active' : ''}`} onClick={() => goToPage(p)}>{p}</button>
-                ))}
-              <button className="pagination-btn pagination-nav-next" onClick={() => goToPage(currentPage + 1)} disabled={currentPage === pageCount}>→</button>
-              <button className="pagination-btn pagination-nav-last" onClick={() => goToPage(pageCount)} disabled={currentPage === pageCount}>Last</button>
-            </div>
           </>
         )}
       </div>
 
       {/* Centered single-column modal */}
       {selected && (
-        <div className="dashboard-modal-overlay" onClick={() => setSelected(null)}>
+        <div className="modal-overlay" onClick={() => setSelected(null)}>
           <div
             className="modal-content admin-modal-card"
             onClick={(e) => e.stopPropagation()}
@@ -732,6 +699,22 @@ const fallbacks = [
 
               {/* Contact */}
               <div className="info-section">
+                <div className="info-row">
+                  <div className="info-label">Email</div>
+                  <div className="info-value">{displayNA(selected.email)}</div>
+                </div>
+                <div className="info-row">
+                  <div className="info-label">Phone</div>
+                  <div className="info-value">{displayNA(selected.phone)}</div>
+                </div>
+              </div>
+
+              {/* Info */}
+              <div className="info-section">
+                <div className="info-row">
+                  <div className="info-label">Looking For</div>
+                  <div className="info-value">{displayNA(selected.lookingFor)}</div>
+                </div>
                 <div className="info-row">
                   <div className="info-label">Resume</div>
                   <div className="info-value">
@@ -811,19 +794,4 @@ const fallbacks = [
       )}
     </div>
   );
-}<div className="info-label">Email</div>
-                  <div className="info-value">{displayNA(selected.email)}</div>
-                </div>
-                <div className="info-row">
-                  <div className="info-label">Phone</div>
-                  <div className="info-value">{displayNA(selected.phone)}</div>
-                </div>
-              </div>
-
-              {/* Info */}
-              <div className="info-section">
-                <div className="info-row">
-                  <div className="info-label">Looking For</div>
-                  <div className="info-value">{displayNA(selected.lookingFor)}</div>
-                </div>
-                <div className="info-row">
+}
