@@ -1,3 +1,4 @@
+
 # services/monday_poll.py
 import os
 import requests
@@ -30,11 +31,13 @@ def get_latest_items(limit: int = 20):
       }}
     }}
     """
+
     resp = requests.post(
         MONDAY_API,
         headers={"Authorization": MONDAY_API_KEY},
         json={"query": query}
     )
+
     resp.raise_for_status()
     items = resp.json()["data"]["boards"][0]["items_page"]["items"]
     return [parse_monday_item(item) for item in items]
