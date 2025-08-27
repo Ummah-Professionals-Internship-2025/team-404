@@ -2,14 +2,16 @@ name: Monday → Discord Notifications
 
 on:
   schedule:
-    # Runs every 5 minutes
-    - cron: "*/5 * * * *"
-  workflow_dispatch:  # allow manual runs
+    - cron: "*/5 * * * *"   # every 5 min
+  workflow_dispatch:
+
+concurrency:
+  group: monday-discord        # prevents overlapping runs
+  cancel-in-progress: false
 
 jobs:
   run-script:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -24,14 +26,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests python-dotenv
 
-      # ✅ Restore seen_items.json cache (reuses the latest cache if available)
-      - name: Restore seen items cache
-        uses: actions/cache@v4
+      # Restore the most recent seen_items.json (if any)
+      - name: Restore seen items
+        id: cache-restore
+        uses: actions/cache/restore@v4
         with:
           path: ummah-scheduler/scripts/seen_items.json
-          key: seen-items-cache-${{ github.run_id }}
+          key: seen-items-${{ github.run_number }}
           restore-keys: |
-            seen-items-cache-
+            seen-items-
+
+      # Create an empty file if nothing was restored (first ever run)
+      - name: Init seen_items.json if missing
+        run: |
+          mkdir -p ummah-scheduler/scripts
+          [ -f ummah-scheduler/scripts/seen_items.json ] || echo "[]" > ummah-scheduler/scripts/seen_items.json
 
       - name: Run Monday → Discord script
         working-directory: ./ummah-scheduler/scripts
@@ -48,11 +57,10 @@ jobs:
           FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
         run: python monday_to_discord.py
 
-      # ✅ Save updated seen_items.json for the next run
-      - name: Save seen items cache
+      # Save the updated seen_items.json for the next run
+      - name: Save seen items
         if: always()
-        uses: actions/cache@v4
+        uses: actions/cache/save@v4
         with:
           path: ummah-scheduler/scripts/seen_items.json
-          key: seen-items-cache-${{ github.run_id }}
-
+          key: seen-items-${{ github.run_number }}
