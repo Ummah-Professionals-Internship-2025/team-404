@@ -32,4 +32,4 @@ def fetch_submissions():
 
         return jsonify(items[::-1])  # latest first
     except Exception as e:
-        return jsonify({"error": str(e)}), 500  
+        return jsonify({"error": str(e)}), 500 
