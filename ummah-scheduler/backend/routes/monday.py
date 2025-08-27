@@ -1,6 +1,6 @@
 # routes/monday.py
 from flask import Blueprint, jsonify
-from services.monday_poll import get_latest_items
+from services.monday_poll import get_latest_items 
 import os
 import json
 
@@ -11,24 +11,26 @@ SUBMISSIONS_FILE = os.path.join(os.path.dirname(__file__), '..', 'data', 'submis
 @monday_bp.route('/submissions', methods=['GET'])
 def fetch_submissions():
     try:
+        # Live items from Monday.com
         items = get_latest_items(limit=50)
 
-        # Merge saved fields (status/pickedBy) if you keep them locally
+        # Load saved statuses (if file exists)
         if os.path.exists(SUBMISSIONS_FILE):
             with open(SUBMISSIONS_FILE, 'r') as f:
                 saved = json.load(f)
         else:
             saved = []
+
         saved_map = {entry["id"]: entry for entry in saved}
+
+        # Merge status + pickedBy into each item
         for item in items:
-            s = saved_map.get(item["id"])
-            if s:
-                item["status"] = s.get("status", item.get("status", "To Do"))
-                item["pickedBy"] = s.get("pickedBy", "")
+            saved_entry = saved_map.get(item["id"])
+            if saved_entry:
+                item["status"] = saved_entry.get("status", "To Do")
+                item["pickedBy"] = saved_entry.get("pickedBy", "")
 
-        # ✅ Hard sort newest → oldest using normalized timestamp
-        items.sort(key=lambda x: x.get("submitted_ts", 0), reverse=True)
-
-        return jsonify(items)
+        # Reverse to make newest submissions appear first
+        return jsonify(items[::-1])
     except Exception as e:
         return jsonify({"error": str(e)}), 500
