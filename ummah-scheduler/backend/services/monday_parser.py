@@ -1,6 +1,3 @@
-
-# services/monday_parser.py
-
 def parse_monday_item(item):
     # Extract and flatten columns like in your working Discord bot
     columns = {c["id"]: c.get("text", "") for c in item["column_values"]}
@@ -20,4 +17,4 @@ def parse_monday_item(item):
         "otherInfo": columns.get("text9", "N/A"),
         "submitted": columns.get("last_updated", item["created_at"]),
         "status": columns.get("status_1", ""),
-    } 
+    }
