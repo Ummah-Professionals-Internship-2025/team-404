@@ -12,6 +12,8 @@ import Sidebar from './Sidebar';
 const SOFT_DELETE_KEY = 'softDeletedAdminSubmissions';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
+const [currentPage, setCurrentPage] = useState(1);
+const PAGE_SIZE = 10;
 
 
 /* =========================
@@ -311,6 +313,9 @@ export default function AdminDashboard() {
     };
   }, []);
 
+   // Reset to page 1 whenever the visible set changes
+useEffect(() => { setCurrentPage(1); }, [searchQuery, professionFilter, statusFilter, submissions.length]);
+
   const fetchJSON = (url) =>
     fetch(url).then((r) => (r.ok ? r.json() : Promise.reject(new Error(`${r.status} ${r.statusText}`))));
 
@@ -446,6 +451,17 @@ const fallbacks = [
       return statusOk && profOk && searchOk;
     });
   }, [submissions, searchQuery, professionFilter, statusFilter]);
+
+  const pageCount = Math.max(1, Math.ceil(visibleSubmissions.length / PAGE_SIZE));
+const pagedSubmissions = useMemo(() => {
+  const start = (currentPage - 1) * PAGE_SIZE;
+  return visibleSubmissions.slice(start, start + PAGE_SIZE);
+}, [visibleSubmissions, currentPage]);
+
+const goToPage = (p) => {
+  const clamped = Math.min(pageCount, Math.max(1, p));
+  setCurrentPage(clamped);
+};
 
   /* =========================
      Render
@@ -604,7 +620,7 @@ const fallbacks = [
           <>
             <p className="dashboard-hint">Submissions are shown from most recent to oldest.</p>
             <div className="submission-list">
-              {visibleSubmissions.map((sub) => {
+              {pagedSubmissions.map((sub) => {
                 const status = canonicalStatus(sub.status);
                 return (
                   <div
@@ -672,6 +688,23 @@ const fallbacks = [
                 );
               })}
             </div>
+
+            {/* Pagination controls */}
+            <div className="pagination">
+              <button className="pagination-btn pagination-nav-first" onClick={() => goToPage(1)} disabled={currentPage === 1}>First</button>
+              <button className="pagination-btn pagination-nav-prev" onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>←</button>
+              {Array.from({ length: pageCount }, (_, i) => i + 1)
+                .slice(
+                  Math.max(0, Math.min(currentPage - 3, pageCount - 5)),
+                  Math.max(5, Math.min(pageCount, currentPage + 2))
+                )
+                .map((p) => (
+                  <button key={p} className={`pagination-btn ${p === currentPage ? 'active' : ''}`} onClick={() => goToPage(p)}>{p}</button>
+                ))}
+              <button className="pagination-btn pagination-nav-next" onClick={() => goToPage(currentPage + 1)} disabled={currentPage === pageCount}>→</button>
+              <button className="pagination-btn pagination-nav-last" onClick={() => goToPage(pageCount)} disabled={currentPage === pageCount}>Last</button>
+            </div>
+            
           </>
         )}
       </div>
