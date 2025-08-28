@@ -1,4 +1,5 @@
 # ummah-scheduler/backend/routes/followup.py
+
 from flask import Blueprint, jsonify, request
 import os
 import json
@@ -7,6 +8,7 @@ import sqlite3
 from datetime import datetime
 import traceback
 from db import log_mentor_action
+
 
 followup_bp = Blueprint('followup', __name__)
 
@@ -54,45 +56,42 @@ init_db()
 def save_status_options():
     return '', 200
 
-# Support both /followup and /followup/ to avoid 404s
 @followup_bp.route('/followup', methods=['GET'])
-@followup_bp.route('/followup/', methods=['GET'])
 def get_done_submissions():
     try:
         from services.monday_poll import get_latest_items
 
-        items = get_latest_items(limit=50)  # may return [] on error
+        items = get_latest_items(limit=50)
 
-        # Load saved statuses (if file exists)
+        # ✅ Load from JSON first (to keep existing flow)
         if os.path.exists(SUBMISSIONS_FILE):
             with open(SUBMISSIONS_FILE, 'r') as f:
                 saved = json.load(f)
         else:
             saved = []
 
-        saved_map = {entry.get("id"): entry for entry in saved if isinstance(entry, dict)}
+        saved_map = {entry["id"]: entry for entry in saved}
 
-        # Merge status + pickedBy into each item
+        # Merge status and pickedBy from JSON to latest items
         for item in items:
-            saved_entry = saved_map.get(item.get("id"))
+            saved_entry = saved_map.get(item["id"])
             if saved_entry:
                 item["status"] = saved_entry.get("status", "To Do")
                 item["pickedBy"] = saved_entry.get("pickedBy", "")
 
-        # Only show Done items in follow-up page
+        # Only show Done items in followup page
         done_items = [item for item in items if item.get("status") == "Done"]
         return jsonify(done_items), 200
 
     except Exception as e:
-        # Return an empty array instead of 500 so the frontend never breaks on .filter()
         print("❌ Error in /api/followup:")
         traceback.print_exc()
-        return jsonify([]), 200
+        return jsonify({"error": str(e)}), 500
 
 @followup_bp.route('/save-status', methods=['POST'])
 def save_submission_status():
     try:
-        data = request.json or {}
+        data = request.json
         sub_id = data.get("id")
         new_status = data.get("status")
         picked_by = data.get("pickedBy", "")
@@ -115,7 +114,7 @@ def save_submission_status():
             "submitted": data.get("submitted", "")
         }
 
-        # Step 1: Keep writing to JSON (original behavior)
+        # ✅ Step 1: Keep writing to JSON (original behavior)
         if os.path.exists(SUBMISSIONS_FILE):
             with open(SUBMISSIONS_FILE, 'r') as f:
                 submissions = json.load(f)
@@ -124,7 +123,7 @@ def save_submission_status():
 
         updated = False
         for sub in submissions:
-            if sub.get("id") == sub_id:
+            if sub["id"] == sub_id:
                 sub.update({
                     "status": new_status,
                     "pickedBy": picked_by,
@@ -144,7 +143,7 @@ def save_submission_status():
         with open(SUBMISSIONS_FILE, 'w') as f:
             json.dump(submissions, f, indent=2)
 
-        # Step 2: Also save/update SQLite (migration)
+        # ✅ Step 2: Also save/update SQLite for migration
         with sqlite3.connect(DB_PATH) as conn:
             c = conn.cursor()
             c.execute("""
@@ -192,6 +191,8 @@ def save_submission_status():
 
             if new_status == "Done" and picked_by:
                 log_mentor_action(picked_by, "done", f"for {full_fields['name']}")
+                
+
 
         return jsonify({"message": "Status saved (JSON + SQLite)"}), 200
 
@@ -199,4 +200,3 @@ def save_submission_status():
         print("❌ Error in save_submission_status:")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
-
