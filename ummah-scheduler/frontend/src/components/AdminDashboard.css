@@ -11,7 +11,7 @@
 .admin-page .app-header {
   position: fixed;
   top: 0;
-  z-index: 1;
+  z-index: 30;
   background: white;
   padding: 34px 28px 34px 28px;
   border-bottom: none;
