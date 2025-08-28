@@ -80,6 +80,7 @@
   align-items: center;
   justify-content: center;
   margin-top: 0.2rem;
+  z-index: 31;
 }
 
 .admin-page .theme-toggle:hover {
