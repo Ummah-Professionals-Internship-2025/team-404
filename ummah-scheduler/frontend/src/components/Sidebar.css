@@ -95,17 +95,6 @@
   padding: 10px 1px;
   transition: all 0.3s ease;
 }
-.sidebar button .exit-admin-icon{
-  width: 18px;
-  height: 18px;
-  margin-right: 8px;
-  vertical-align: -3px;
-  filter: brightness(0) saturate(100%);
-}
-
-.theme-dark .sidebar button .exit-admin-icon{
-  filter: brightness(0) saturate(100%) invert(1);
-}
 
 .theme-dark .sidebar button {
   color: whitesmoke;
@@ -113,7 +102,7 @@
 }
 
 .sidebar button:hover {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
