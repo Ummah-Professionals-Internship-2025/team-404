@@ -51,11 +51,11 @@ def init_db():
 
 init_db()
 
-@followup_bp.route('/save-status', methods=['OPTIONS'])
+@followup_bp.route('/api/save-status', methods=['OPTIONS'])
 def save_status_options():
     return '', 200
 
-@followup_bp.route('/followup', methods=['GET'])
+@followup_bp.route('/api/followup', methods=['GET'])
 def get_done_submissions():
     try:
         from services.monday_poll import get_latest_items
