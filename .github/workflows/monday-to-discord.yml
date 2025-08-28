@@ -1,0 +1,66 @@
+name: Monday → Discord Notifications
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # every 5 min
+  workflow_dispatch:
+
+concurrency:
+  group: monday-discord        # prevents overlapping runs
+  cancel-in-progress: false
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests python-dotenv
+
+      # Restore the most recent seen_items.json (if any)
+      - name: Restore seen items
+        id: cache-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: ummah-scheduler/scripts/seen_items.json
+          key: seen-items-${{ github.run_number }}
+          restore-keys: |
+            seen-items-
+
+      # Create an empty file if nothing was restored (first ever run)
+      - name: Init seen_items.json if missing
+        run: |
+          mkdir -p ummah-scheduler/scripts
+          [ -f ummah-scheduler/scripts/seen_items.json ] || echo "[]" > ummah-scheduler/scripts/seen_items.json
+
+      - name: Run Monday → Discord script
+        working-directory: ./ummah-scheduler/scripts
+        env:
+          MONDAY_API_KEY: ${{ secrets.MONDAY_API_KEY }}
+          MONDAY_BOARD_ID: ${{ secrets.MONDAY_BOARD_ID }}
+          DISCORD_GENERAL_WEBHOOK: ${{ secrets.DISCORD_GENERAL_WEBHOOK }}
+          DISCORD_BUSINESS_WEBHOOK: ${{ secrets.DISCORD_BUSINESS_WEBHOOK }}
+          DISCORD_EDUCATION_WEBHOOK: ${{ secrets.DISCORD_EDUCATION_WEBHOOK }}
+          DISCORD_ENGINEERING_WEBHOOK: ${{ secrets.DISCORD_ENGINEERING_WEBHOOK }}
+          DISCORD_FINANCE_WEBHOOK: ${{ secrets.DISCORD_FINANCE_WEBHOOK }}
+          DISCORD_IT_WEBHOOK: ${{ secrets.DISCORD_IT_WEBHOOK }}
+          DISCORD_LAW_WEBHOOK: ${{ secrets.DISCORD_LAW_WEBHOOK }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+        run: python monday_to_discord.py
+
+      # Save the updated seen_items.json for the next run
+      - name: Save seen items
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ummah-scheduler/scripts/seen_items.json
+          key: seen-items-${{ github.run_number }}
