@@ -101,6 +101,28 @@
   height: 18px;
 }
 
+/* Light mode */
+.stats-page .status-pill-done.active {
+  color: #17803D !important;
+  border: 2px solid transparent;
+  background-image:
+    linear-gradient(#DCFEE7, #DCFEE7),
+    linear-gradient(#DCFEE7, #17803D) !important;
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+/* Dark mode */
+.stats-page.theme-dark .status-pill-done.active {
+  color: #b2e6c2 !important;
+  border: 2px solid transparent;
+  background-image:
+    linear-gradient(#0d4c24, #0d4c24),
+    linear-gradient(#b2e6c2, #b2e6c2) !important;
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
 .stats-page .filter-pill select,
 .stats-page .filter-pill input,
 .stats-page .filter-pill .multi-toggle {
