@@ -40,15 +40,27 @@
 /* ===== Sticky glass toolbar ===== */
 .admin-toolbar{
   display:flex; align-items:center; justify-content:space-between; gap:16px;
-  padding:18px 28px 8px; flex-wrap:wrap;
+  padding:10px 0px 6px; flex-wrap:wrap;
 }
 .stats-toolbar{
-  position:sticky; top:0; z-index:20;
+  position:sticky; 
+  top:0;
   backdrop-filter:saturate(120%) blur(8px);
   background:rgba(245,248,252,.70);
   border-bottom:1px solid rgba(0,124,166,.08);
+  z-index: 1;
 }
 .toolbar-left{display:flex; gap:14px; flex-wrap:wrap;}
+
+/* Compact broom pill to sit left of advisor */
+.stats-page .broom-pill{
+  padding: 8px 10px;
+  min-width: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.stats-page .broom-pill img{ width:1.3rem; height:1.3rem; display:block; }
 
 .stats-page .filter-pill {
   display: flex;
@@ -146,14 +158,89 @@
 /* Multi-select dropdown */
 .stats-page .multi-menu {
   position: absolute;
+  top: calc(100% + 8px);
   right: 0;
-  margin-top: 8px;
+  margin-top: 0;
   width: 280px;
-  z-index: 30;
   background: white;
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   padding: 16px;
+}
+
+/* Advisor search field inside custom dropdown */
+.stats-page .advisor-menu .multi-search-wrap{
+  margin: 0 -16px 8px;
+  padding: 0 16px 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+.stats-page .advisor-menu .multi-search{
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+}
+.stats-page .advisor-menu .multi-search:focus{
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+
+/* Ensure advisor dropdown text/layout is left-aligned */
+.stats-page .advisor-menu { text-align: left; }
+.stats-page .advisor-menu .multi-item { justify-content: flex-start; }
+
+/* Style radio inputs to match checkbox look/feel */
+.stats-page .advisor-menu .multi-item input[type="radio"]{
+  appearance: none;
+  width: 13px;
+  height: 13px;
+  min-width: 13px;
+  min-height: 13px;
+  max-width: 13px;
+  max-height: 13px;
+  border: 1px solid #007CA6;
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+}
+.stats-page .advisor-menu .multi-item input[type="radio"]:checked{ background:#007CA6; }
+.stats-page .advisor-menu .multi-item input[type="radio"]:checked::after{
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  width: 5px;
+  height: 5px;
+  background: white;
+  border-radius: 50%;
+}
+
+/* Dark mode for advisor menu search */
+.stats-page.theme-dark .advisor-menu .multi-search-wrap{ border-bottom-color:#374151; }
+.stats-page.theme-dark .advisor-menu .multi-search{
+  background:#0f1a2b ;
+  color:#e5e7eb;
+  border-color:#374151;
+}
+.stats-page.theme-dark .advisor-menu .multi-search:focus{
+  border-color:#60a5fa;
+  box-shadow: 0 0 0 3px rgba(96,165,250,0.20);
+}
+
+.stats-page.theme-dark .advisor-menu .multi-item input[type="radio"]{ border-color:#60a5fa; }
+.stats-page.theme-dark .advisor-menu .multi-item input[type="radio"]:checked{ background:#60a5fa; }
+
+/* Explicitly re-enable scrollbars inside advisor list despite global hide */
+.stats-page .advisor-menu .multi-scroll{
+  overflow: auto !important;
+  scrollbar-width: thin !important;        /* Firefox */
+  -ms-overflow-style: auto;     /* IE/Edge legacy */
 }
 
 .stats-page .multi-header {
@@ -165,10 +252,26 @@
 
 .stats-page .multi-scroll {
   max-height: 140px;
-  overflow: auto;
+  overflow: auto !important;
+  scrollbar-width: thin !important; /* Firefox */
+  -ms-overflow-style: auto;         /* IE/Edge legacy */
   margin: 0 -16px;
   padding: 0 16px;
 }
+
+/* WebKit scrollbar styling for industries list */
+.stats-page .multi-menu .multi-scroll::-webkit-scrollbar{
+  width: 8px;
+  height: 8px;
+}
+.stats-page .multi-menu .multi-scroll::-webkit-scrollbar-track{ background: transparent; }
+.stats-page .multi-menu .multi-scroll::-webkit-scrollbar-thumb{
+  background: #cbd5e1;
+  border-radius: 8px;
+}
+.stats-page .multi-menu .multi-scroll::-webkit-scrollbar-thumb:hover{ background: #94a3b8; }
+.stats-page.theme-dark .multi-menu .multi-scroll::-webkit-scrollbar-thumb{ background: #475569; }
+.stats-page.theme-dark .multi-menu .multi-scroll::-webkit-scrollbar-thumb:hover{ background: #64748b; }
 
 .stats-page .multi-item {
   display: flex;
@@ -415,7 +518,12 @@
 
 /* ===== KPI Cards — chunky, tactile ===== */
 .card-grid{
-  display:flex; flex-wrap:wrap; gap:16px; justify-content:center; margin:10px 0 6px;
+  display:flex; 
+  flex-wrap:wrap; 
+  gap:16px; 
+  justify-content:center; 
+  z-index: 2;
+  margin:10px 0 6px;
 }
 @media (min-width:1000px){.card-grid{flex-wrap:nowrap;}}
 .stat-card{
@@ -471,7 +579,7 @@ tr:hover{background:#f6fafd;}
   position: fixed;
   inset: 0;
   background: rgba(2,14,26,.55);
-  z-index: 999;
+  z-index: 10;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -563,7 +671,7 @@ tr:hover{background:#f6fafd;}
 .theme-dark .stats-hero-title{color:#9be7ff;}
 .theme-dark .theme-toggle{color:#9be7ff;}
 .theme-dark .stats-btn{background:#111827; color:#e5e7eb;}
-.theme-dark .stats-toolbar{background:rgba(11,18,32,.78); border-bottom:1px solid #1f2937; backdrop-filter:saturate(120%) blur(8px);}
+.theme-dark .stats-toolbar{background: #10172a;}
 
 .theme-dark .search-chip,.theme-dark .filter-chip{background:#0f1b2a; box-shadow:8px 12px 18px rgba(0,0,0,.35);}
 .theme-dark .search-input{color:#cfe9f6;}
