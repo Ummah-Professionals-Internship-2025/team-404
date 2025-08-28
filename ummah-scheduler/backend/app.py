@@ -1,7 +1,6 @@
 # backend/app.py
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
-from flask import jsonify
 from routes.monday import monday_bp
 from routes.auth import auth_bp
 from routes.schedule import schedule
@@ -9,30 +8,35 @@ from routes.followup import followup_bp
 from app_config import FLASK_SECRET_KEY
 from db import init_db, seed_admin
 from routes.admin import admin_bp
-import sqlite3
-from db import DB_PATH
 from routes.message_logger import message_logger
+import sqlite3
+import os
+from db import DB_PATH
 
 
 
 app = Flask(__name__)
 app.secret_key = FLASK_SECRET_KEY
-app.register_blueprint(admin_bp)
-# ✅ Updated CORS config — full support for frontend from localhost:5173
+
+# ✅ Load frontend URL from environment for CORS
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+print(f"🔗 Allowing CORS requests from: {FRONTEND_URL}")
+
 CORS(app, supports_credentials=True, resources={
     r"/api/*": {
-        "origins": "http://localhost:5173",
+        "origins": FRONTEND_URL,
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"]
     }
 })
+
 # ✅ Register blueprints
+app.register_blueprint(admin_bp)
 app.register_blueprint(monday_bp, url_prefix="/api")
 app.register_blueprint(auth_bp)
-app.register_blueprint(schedule) 
+app.register_blueprint(schedule)
 app.register_blueprint(followup_bp, url_prefix='/api')
 app.register_blueprint(message_logger)
-
 
 
 @app.route("/")
