@@ -147,24 +147,24 @@ export default function DashboardSchedulerModal({
   
     const mentorEmail = sessionStorage.getItem('mentorEmail');
     if (!mentorEmail) {
-      window.location.href = 'http://localhost:5050/auth/login';
+      window.location.href = `${BACKEND_URL}/auth/login`;
       return;
     }
   
     // Verify that this mentor actually has Google tokens on the backend
     try {
-      const res = await fetch(`http://localhost:5050/auth/token?email=${encodeURIComponent(mentorEmail)}`);
+      const res = await fetch(`${BACKEND_URL}/auth/token?email=${encodeURIComponent(mentorEmail)}`);
       if (!res.ok) {
-        window.location.href = 'http://localhost:5050/auth/login';
+         window.location.href = `${BACKEND_URL}/auth/login`;
         return;
       }
     } catch (_err) {
-      window.location.href = 'http://localhost:5050/auth/login';
+      window.location.href = `${BACKEND_URL}/auth/login`;
       return;
     }
   
-    window.location.href = `http://localhost:5173/schedule-confirm?email=${mentorEmail}`;
-  };
+   window.location.href = `${import.meta.env.VITE_FRONTEND_URL}/schedule-confirm?email=${mentorEmail}`;
+     }; 
 
   const renderTimePeriod = (periodName, times) => {
     if (times.length === 0) return null;
