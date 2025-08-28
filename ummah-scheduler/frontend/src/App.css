@@ -86,7 +86,7 @@ body::-webkit-scrollbar {
 .app-header {
   position: fixed;
   top: 0;
-  z-index: 30;
+  z-index: 3;
   background: linear-gradient(99.1deg, #003F55 18.55%, #008BBB 78.37%);
   padding: 34px 28px 34px 28px; /* Added right padding to move burger away from edge */
   border-bottom: none;
@@ -858,7 +858,18 @@ button:hover {
   position: fixed;
   inset: 0;
   background: rgba(2,14,26,.55);
-  z-index: 1000;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(2px);
+}
+
+.dashboard-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2,14,26,.55);
+  z-index: 10;
   display: flex;
   justify-content: center;
   align-items: center;
