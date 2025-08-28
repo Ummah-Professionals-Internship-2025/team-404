@@ -83,7 +83,7 @@ function Dashboard() {
 
   // Keep your original fetch logic, but as a function so we can reuse it for the 5-min refresh
   const loadSubmissions = () => {
-    fetch('http://localhost:5050/api/submissions')
+    fetch(`${BACKEND_URL}/api/submissions`) 
       .then((res) => res.json())
       .then((data) => {
         const submissionsWithDefaultStatus = data
@@ -622,7 +622,7 @@ function Dashboard() {
                 // ✅ Save to backend
                 const fullStudent = submissions.find(s => s.id === pendingItemId);
 
-                fetch('http://localhost:5050/api/save-status', {
+                fetch(`${BACKEND_URL}/api/save-status`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
