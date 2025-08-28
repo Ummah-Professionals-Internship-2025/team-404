@@ -575,14 +575,26 @@ const fallbacks = [
 
         {/* Status filter pills */}
         <div className="status-filter-pills">
-          {['ALL', 'TO DO', 'IN PROGRESS', 'CANCELED'].map((status) => (
+          {['ALL', 'TO DO', 'IN PROGRESS', 'DONE', 'CANCELED'].map((status) => (
             <button
               key={status}
-              onClick={() => setStatusFilter(status === 'ALL' ? 'All' : status === 'TO DO' ? 'To Do' : status === 'IN PROGRESS' ? 'In Progress' : 'Canceled')}
-              className={`status-pill status-pill-${status.toLowerCase().replace(/\s+/g, '-')} ${
+               onClick={() =>
+                setStatusFilter(
+                  status === 'ALL'
+                    ? 'All'
+                    : status === 'TO DO'
+                    ? 'To Do'
+                    : status === 'IN PROGRESS'
+                    ? 'In Progress'
+                    : status === 'DONE'
+                    ? 'Done'
+                    : 'Canceled'
+                )
+              }              className={`status-pill status-pill-${status.toLowerCase().replace(/\s+/g, '-')} ${
                 (statusFilter === 'All' && status === 'ALL') ||
                 (statusFilter === 'To Do' && status === 'TO DO') ||
                 (statusFilter === 'In Progress' && status === 'IN PROGRESS') ||
+                (statusFilter === 'Done' && status === 'DONE') ||
                 (statusFilter === 'Canceled' && status === 'CANCELED')
                   ? 'active'
                   : ''
