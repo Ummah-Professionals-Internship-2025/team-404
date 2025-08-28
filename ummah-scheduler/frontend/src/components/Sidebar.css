@@ -94,7 +94,8 @@
   cursor: pointer;
   padding: 10px 1px;
   transition: all 0.3s ease;
-  display: inline-flex;           /* keep icon + text on one line */
+  white-space: nowrap;            /* prevent wrap on hover */
+  align-items: center;
 }
 
 .sidebar button .exit-admin-icon{
