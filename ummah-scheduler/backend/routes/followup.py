@@ -9,11 +9,10 @@ from datetime import datetime
 import traceback
 from db import log_mentor_action
 
-
 followup_bp = Blueprint('followup', __name__)
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-SUBMISSIONS_FILE = os.path.join(os.path.dirname(__file__), '..', 'data', 'submissions.json')
+SUBMISSIONS_FILE = DATA_DIR / "submissions.json"
 DB_PATH = Path(__file__).resolve().parent.parent / "admin_data.db"
 
 print("✅ followup.py loaded and blueprint created")
@@ -52,46 +51,20 @@ def init_db():
 
 init_db()
 
-@followup_bp.route('/save-status', methods=['OPTIONS'])
-def save_status_options():
-    return '', 200
-
-@followup_bp.route('/followup', methods=['GET'])
-def get_done_submissions():
-    try:
-        from services.monday_poll import get_latest_items
-
-        items = get_latest_items(limit=50)
-
-        # ✅ Load from JSON first (to keep existing flow)
-        if os.path.exists(SUBMISSIONS_FILE):
-            with open(SUBMISSIONS_FILE, 'r') as f:
-                saved = json.load(f)
-        else:
-            saved = []
-
-        saved_map = {entry["id"]: entry for entry in saved}
-
-        # Merge status and pickedBy from JSON to latest items
-        for item in items:
-            saved_entry = saved_map.get(item["id"])
-            if saved_entry:
-                item["status"] = saved_entry.get("status", "To Do")
-                item["pickedBy"] = saved_entry.get("pickedBy", "")
-
-        # Only show Done items in followup page
-        done_items = [item for item in items if item.get("status") == "Done"]
-        return jsonify(done_items), 200
-
-    except Exception as e:
-        print("❌ Error in /api/followup:")
-        traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
-
-@followup_bp.route('/save-status', methods=['POST'])
+# -------------------------------
+# Save status (POST + OPTIONS)
+# -------------------------------
+@followup_bp.route('/save-status', methods=['OPTIONS', 'POST'])
 def save_submission_status():
+    # Handle CORS preflight
+    if request.method == 'OPTIONS':
+        return ('', 204)
+
     try:
-        data = request.json
+        data = request.get_json(silent=True) or {}
+        if not isinstance(data, dict):
+            return jsonify({"error": "Request body must be JSON"}), 400
+
         sub_id = data.get("id")
         new_status = data.get("status")
         picked_by = data.get("pickedBy", "")
@@ -114,60 +87,53 @@ def save_submission_status():
             "submitted": data.get("submitted", "")
         }
 
-        # ✅ Step 1: Keep writing to JSON (original behavior)
-        if os.path.exists(SUBMISSIONS_FILE):
-            with open(SUBMISSIONS_FILE, 'r') as f:
-                submissions = json.load(f)
-        else:
-            submissions = []
+        # --- JSON file storage ---
+        submissions = []
+        if SUBMISSIONS_FILE.exists():
+            try:
+                with open(SUBMISSIONS_FILE, 'r') as f:
+                    txt = f.read().strip()
+                    submissions = json.loads(txt) if txt else []
+            except Exception:
+                submissions = []
 
         updated = False
         for sub in submissions:
-            if sub["id"] == sub_id:
-                sub.update({
-                    "status": new_status,
-                    "pickedBy": picked_by,
-                    **full_fields
-                })
+            if sub.get("id") == sub_id:
+                sub.update({"status": new_status, "pickedBy": picked_by, **full_fields})
                 updated = True
                 break
-
         if not updated:
-            submissions.append({
-                "id": sub_id,
-                "status": new_status,
-                "pickedBy": picked_by,
-                **full_fields
-            })
+            submissions.append({"id": sub_id, "status": new_status, "pickedBy": picked_by, **full_fields})
 
         with open(SUBMISSIONS_FILE, 'w') as f:
             json.dump(submissions, f, indent=2)
 
-        # ✅ Step 2: Also save/update SQLite for migration
+        # --- SQLite upsert ---
         with sqlite3.connect(DB_PATH) as conn:
             c = conn.cursor()
             c.execute("""
-            INSERT INTO admin_submissions (
-                id, name, email, phone, industry, academicStanding,
-                lookingFor, resume, howTheyHeard, availability,
-                timeline, otherInfo, submitted, status, pickedBy, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(id) DO UPDATE SET
-                name=excluded.name,
-                email=excluded.email,
-                phone=excluded.phone,
-                industry=excluded.industry,
-                academicStanding=excluded.academicStanding,
-                lookingFor=excluded.lookingFor,
-                resume=excluded.resume,
-                howTheyHeard=excluded.howTheyHeard,
-                availability=excluded.availability,
-                timeline=excluded.timeline,
-                otherInfo=excluded.otherInfo,
-                submitted=excluded.submitted,
-                status=excluded.status,
-                pickedBy=excluded.pickedBy,
-                updated_at=excluded.updated_at
+                INSERT INTO admin_submissions (
+                    id, name, email, phone, industry, academicStanding,
+                    lookingFor, resume, howTheyHeard, availability,
+                    timeline, otherInfo, submitted, status, pickedBy, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(id) DO UPDATE SET
+                    name=excluded.name,
+                    email=excluded.email,
+                    phone=excluded.phone,
+                    industry=excluded.industry,
+                    academicStanding=excluded.academicStanding,
+                    lookingFor=excluded.lookingFor,
+                    resume=excluded.resume,
+                    howTheyHeard=excluded.howTheyHeard,
+                    availability=excluded.availability,
+                    timeline=excluded.timeline,
+                    otherInfo=excluded.otherInfo,
+                    submitted=excluded.submitted,
+                    status=excluded.status,
+                    pickedBy=excluded.pickedBy,
+                    updated_at=excluded.updated_at
             """, (
                 sub_id,
                 full_fields["name"],
@@ -189,14 +155,46 @@ def save_submission_status():
             conn.commit()
             print(f"✅ SQLite updated for ID {sub_id}")
 
-            if new_status == "Done" and picked_by:
-                log_mentor_action(picked_by, "done", f"for {full_fields['name']}")
-                
-
+        if new_status == "Done" and picked_by:
+            log_mentor_action(picked_by, "done", f"for {full_fields['name']}")
 
         return jsonify({"message": "Status saved (JSON + SQLite)"}), 200
 
     except Exception as e:
         print("❌ Error in save_submission_status:")
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+# -------------------------------
+# Get submissions with status=Done
+# -------------------------------
+@followup_bp.route('/followup', methods=['GET'])
+def get_done_submissions():
+    try:
+        from services.monday_poll import get_latest_items
+
+        items = get_latest_items(limit=50)
+
+        # ✅ Load from JSON first (to keep existing flow)
+        if SUBMISSIONS_FILE.exists():
+            with open(SUBMISSIONS_FILE, 'r') as f:
+                saved = json.load(f)
+        else:
+            saved = []
+
+        saved_map = {entry["id"]: entry for entry in saved}
+
+        # Merge status + pickedBy into items
+        for item in items:
+            saved_entry = saved_map.get(item["id"])
+            if saved_entry:
+                item["status"] = saved_entry.get("status", "To Do")
+                item["pickedBy"] = saved_entry.get("pickedBy", "")
+
+        done_items = [item for item in items if item.get("status") == "Done"]
+        return jsonify(done_items), 200
+
+    except Exception as e:
+        print("❌ Error in /api/followup:")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
