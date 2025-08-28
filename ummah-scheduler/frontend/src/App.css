@@ -643,7 +643,6 @@ button:hover {
   align-items: center;
   justify-content: center;
   margin-top: 0.2rem;
-  z-index: 31;
 }
 
 .theme-dark .theme-toggle:hover,
