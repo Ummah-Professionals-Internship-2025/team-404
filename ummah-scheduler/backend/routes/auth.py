@@ -152,11 +152,7 @@ def admin_google_login():
 
 @auth_bp.route("/oauth2callback-admin")
 def admin_oauth2callback():
-    flow = Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE,
-        scopes=SCOPES,
-        redirect_uri="http://localhost:5050/oauth2callback-admin"
-    )
+    flow = build_flow("/oauth2callback-admin")
     flow.fetch_token(authorization_response=request.url)
 
     credentials = flow.credentials
@@ -164,11 +160,12 @@ def admin_oauth2callback():
     user_info = user_service.userinfo().get().execute()
 
     admin_email = user_info.get("email")
-    allowed_email = os.getenv("ADMIN_GOOGLE_EMAIL")
 
+    # Only allow a single admin email from env var
+    allowed_email = os.getenv("ADMIN_GOOGLE_EMAIL")
     if admin_email != allowed_email:
         return "Unauthorized", 403
 
     session["adminLoggedIn"] = True
     session["adminEmail"] = admin_email
-    return redirect("http://localhost:5173/admin-dashboard?loggedIn=true")
+    return redirect(f"{FRONTEND_URL}/admin-dashboard?loggedIn=true")

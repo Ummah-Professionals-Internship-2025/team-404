@@ -30,6 +30,7 @@ def fetch_submissions():
                 item["status"] = saved_entry.get("status", "To Do")
                 item["pickedBy"] = saved_entry.get("pickedBy", "")
 
-        return jsonify(items[::-1])  # latest first
+        # Reverse to make newest submissions appear first
+        return jsonify(items[::-1])
     except Exception as e:
         return jsonify({"error": str(e)}), 500

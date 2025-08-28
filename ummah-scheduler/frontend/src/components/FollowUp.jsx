@@ -11,6 +11,9 @@ import dark_mode_icon from '../assets/dark_mode.svg';
 import Sidebar from "./Sidebar";
 import FollowUpModal from "./FollowUpModal";
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
+
 export default function FollowUp() {
   const [doneSubmissions, setDoneSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -399,7 +402,7 @@ export default function FollowUp() {
 
       {/* Use the new DashboardModal-based modal */}
       {selected && (
-        <div className="modal-overlay" onClick={() => setSelected(null)}>
+        <div className="dashboard-modal-overlay" onClick={() => setSelected(null)}>
           <FollowUpModal
             student={selected}
             onClose={() => setSelected(null)}

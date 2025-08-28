@@ -10,6 +10,8 @@ import search_icon from '../assets/search_icon.svg';
 import Sidebar from './Sidebar';
 
 const SOFT_DELETE_KEY = 'softDeletedAdminSubmissions';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
 
 /* =========================
    Helpers / Normalization
@@ -234,6 +236,8 @@ export default function AdminDashboard() {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 10;
 
   // menu / soft-delete
   const [menuOpen, setMenuOpen] = useState(false);
@@ -427,7 +431,7 @@ export default function AdminDashboard() {
   const visibleSubmissions = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     const norm = (s) => (s || '').toLowerCase().trim();
-    return submissions.filter((s) => {
+    const filtered = submissions.filter((s) => {
       const sStatus = canonicalStatus(s.status);
       const statusOk = statusFilter === 'All' || sStatus === canonicalStatus(statusFilter);
       const profOk = professionFilter === 'All' || (s.industry || '') === professionFilter;
@@ -439,7 +443,22 @@ export default function AdminDashboard() {
         norm(s.pickedBy).includes(q);
       return statusOk && profOk && searchOk;
     });
+    return filtered;
   }, [submissions, searchQuery, professionFilter, statusFilter]);
+
+  // Reset to page 1 whenever the visible set changes
+  useEffect(() => { setCurrentPage(1); }, [searchQuery, professionFilter, statusFilter, submissions.length]);
+
+  const pageCount = Math.max(1, Math.ceil(visibleSubmissions.length / PAGE_SIZE));
+  const pagedSubmissions = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return visibleSubmissions.slice(start, start + PAGE_SIZE);
+  }, [visibleSubmissions, currentPage]);
+
+  const goToPage = (p) => {
+    const clamped = Math.min(pageCount, Math.max(1, p));
+    setCurrentPage(clamped);
+  };
 
   /* =========================
      Render
@@ -569,14 +588,27 @@ export default function AdminDashboard() {
 
         {/* Status filter pills */}
         <div className="status-filter-pills">
-          {['ALL', 'TO DO', 'IN PROGRESS', 'CANCELED'].map((status) => (
+          {['ALL', 'TO DO', 'IN PROGRESS', 'DONE', 'CANCELED'].map((status) => (
             <button
               key={status}
-              onClick={() => setStatusFilter(status === 'ALL' ? 'All' : status === 'TO DO' ? 'To Do' : status === 'IN PROGRESS' ? 'In Progress' : 'Canceled')}
+              onClick={() =>
+                setStatusFilter(
+                  status === 'ALL'
+                    ? 'All'
+                    : status === 'TO DO'
+                    ? 'To Do'
+                    : status === 'IN PROGRESS'
+                    ? 'In Progress'
+                    : status === 'DONE'
+                    ? 'Done'
+                    : 'Canceled'
+                )
+              }
               className={`status-pill status-pill-${status.toLowerCase().replace(/\s+/g, '-')} ${
                 (statusFilter === 'All' && status === 'ALL') ||
                 (statusFilter === 'To Do' && status === 'TO DO') ||
                 (statusFilter === 'In Progress' && status === 'IN PROGRESS') ||
+                (statusFilter === 'Done' && status === 'DONE') ||
                 (statusFilter === 'Canceled' && status === 'CANCELED')
                   ? 'active'
                   : ''
@@ -598,7 +630,7 @@ export default function AdminDashboard() {
           <>
             <p className="dashboard-hint">Submissions are shown from most recent to oldest.</p>
             <div className="submission-list">
-              {visibleSubmissions.map((sub) => {
+              {pagedSubmissions.map((sub) => {
                 const status = canonicalStatus(sub.status);
                 return (
                   <div
@@ -666,13 +698,29 @@ export default function AdminDashboard() {
                 );
               })}
             </div>
+
+            {/* Pagination controls */}
+            <div className="pagination">
+              <button className="pagination-btn pagination-nav-first" onClick={() => goToPage(1)} disabled={currentPage === 1}>First</button>
+              <button className="pagination-btn pagination-nav-prev" onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>←</button>
+              {Array.from({ length: pageCount }, (_, i) => i + 1)
+                .slice(
+                  Math.max(0, Math.min(currentPage - 3, pageCount - 5)),
+                  Math.max(5, Math.min(pageCount, currentPage + 2))
+                )
+                .map((p) => (
+                  <button key={p} className={`pagination-btn ${p === currentPage ? 'active' : ''}`} onClick={() => goToPage(p)}>{p}</button>
+                ))}
+              <button className="pagination-btn pagination-nav-next" onClick={() => goToPage(currentPage + 1)} disabled={currentPage === pageCount}>→</button>
+              <button className="pagination-btn pagination-nav-last" onClick={() => goToPage(pageCount)} disabled={currentPage === pageCount}>Last</button>
+            </div>
           </>
         )}
       </div>
 
       {/* Centered single-column modal */}
       {selected && (
-        <div className="modal-overlay" onClick={() => setSelected(null)}>
+        <div className="dashboard-modal-overlay" onClick={() => setSelected(null)}>
           <div
             className="modal-content admin-modal-card"
             onClick={(e) => e.stopPropagation()}

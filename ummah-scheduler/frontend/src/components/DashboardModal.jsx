@@ -6,6 +6,9 @@ import alarm_icon from '../assets/alarm.svg';
 import alarm_dark_icon from '../assets/alarm_dark.svg';
 import copy_icon from '../assets/copy.svg';
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
+
 export default function DashboardSchedulerModal({
   student,
   onClose,

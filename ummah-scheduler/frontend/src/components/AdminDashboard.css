@@ -445,6 +445,27 @@
   background-clip: padding-box, border-box;
 }
 
+/* New: Done pill should be green with a gradient border */
+.admin-page .status-pill-done.active {
+  color: #17803D !important;
+  border: 2px solid transparent;
+  background-image:
+    linear-gradient(#DCFEE7, #DCFEE7),
+    linear-gradient( #DCFEE7, #17803D) !important;
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+.admin-page.theme-dark .status-pill-done.active {
+  color: #b2e6c2 !important;
+  border: 2px solid transparent;
+  background-image:
+    linear-gradient(#0d4c24, #0d4c24),
+    linear-gradient( #b2e6c2, #b2e6c2) !important;
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
 .admin-page .status-pill-canceled.active {
   background: #EDF2F6;
   color: #595F69;

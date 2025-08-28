@@ -852,6 +852,17 @@ button:hover {
 }
 
 /* Modal */
+.dashboard-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2,14,26,.55);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(2px);
+}
+
 .theme-dark .modal-content {
   background: #0b1220;
   color: #e5e7eb;

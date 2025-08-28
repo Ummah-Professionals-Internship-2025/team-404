@@ -1,5 +1,7 @@
 //adminlogin.jsx
 import React, { useEffect } from 'react';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
 
 export default function AdminLogin() {
   useEffect(() => {

@@ -4,6 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import logo from '../assets/white-horizontal.png';
 import './Header.css';
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
+
 export default function Header() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
