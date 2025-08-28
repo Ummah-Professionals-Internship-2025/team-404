@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Sidebar.css';
+import logoutIcon from '../assets/log_out.svg';
 
 export default function Sidebar({ isAdmin }) {
   const [open, setOpen] = useState(false);
@@ -43,7 +44,10 @@ export default function Sidebar({ isAdmin }) {
           <>
             <button onClick={() => { setOpen(false); navigate('/admin-dashboard'); }}>Dashboard</button>
             <button onClick={() => { setOpen(false); navigate('/admin-statistics'); }}>Statistics</button>
-            <button onClick={() => { setOpen(false); navigate('/'); }}>Exit Admin</button>
+            <button onClick={() => { setOpen(false); navigate('/'); }}>
+              <img src={logoutIcon} alt="" aria-hidden="true" className="exit-admin-icon" />
+              Exit Admin
+            </button>
           </>
         ) : (
           <>
