@@ -46,7 +46,7 @@ export default function FollowUp() {
   // --- data fetch with loading state ---
   useEffect(() => {
     setLoading(true);
-    fetch("http://localhost:5050/api/followup")
+     fetch(`${BACKEND_URL}/api/followup`)
       .then((res) => res.json())
       .then((data) => {
         const deletedIds = JSON.parse(
@@ -196,11 +196,11 @@ export default function FollowUp() {
 
     const me = sessionStorage.getItem("mentorEmail") || mentorEmail;
     if (!me) {
-      window.location.href = "http://localhost:5050/auth/login";
+       window.location.href = `${BACKEND_URL}/auth/login`;
       return;
     }
-    window.location.href = `http://localhost:5173/schedule-confirm?email=${me}`;
-  };
+   window.location.href = `${FRONTEND_URL}/schedule-confirm?email=${me}`;
+};
 
 
   return (
