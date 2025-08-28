@@ -16,6 +16,7 @@ import './AdminStatistics.css';
 import logo from '../assets/blue-horizontal.png';
 import light_mode_icon from '../assets/light_mode_blue.svg';
 import dark_mode_icon from '../assets/dark_mode_blue.svg';
+import broom_icon from '../assets/broom.svg';
 import Sidebar from './Sidebar';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
@@ -296,6 +297,10 @@ export default function AdminStatistics() {
   const [industryOpen, setIndustryOpen] = useState(false);
   const [industrySelected, setIndustrySelected] = useState(() => new Set()); // empty => All
   const industryMenuRef = useRef(null);
+  // Advisor dropdown (custom panel with search)
+  const [advisorOpen, setAdvisorOpen] = useState(false);
+  const [advisorQuery, setAdvisorQuery] = useState('');
+  const advisorMenuRef = useRef(null);
 
   // 🚀 Fetch ALL submissions (including "To Do" from alternate endpoints)
   useEffect(() => {
@@ -474,12 +479,12 @@ const todoUrls = [
 
   useEffect(() => {
     const onDocClick = (e) => {
-      if (!industryMenuRef.current) return;
-      if (!industryMenuRef.current.contains(e.target)) setIndustryOpen(false);
+      if (industryMenuRef.current && !industryMenuRef.current.contains(e.target)) setIndustryOpen(false);
+      if (advisorMenuRef.current && !advisorMenuRef.current.contains(e.target)) setAdvisorOpen(false);
     };
-    if (industryOpen) document.addEventListener('mousedown', onDocClick);
+    if (industryOpen || advisorOpen) document.addEventListener('mousedown', onDocClick);
     return () => document.removeEventListener('mousedown', onDocClick);
-  }, [industryOpen]);
+  }, [industryOpen, advisorOpen]);
 
   const advisorOptions = useMemo(() => {
     const set = new Set(submissions.map(s => (s.pickedBy || '').trim()).filter(Boolean));
@@ -751,28 +756,61 @@ const todoUrls = [
             {/* 2) Filters ABOVE the charts */}
             <div className="admin-toolbar stats-toolbar">
               <div className="toolbar-left">
-                {/* Advisor type-ahead */}
-                <div className="filter-pill">
+                {/* Advisor dropdown with search (custom panel) */}
+                <div className="filter-pill" ref={advisorMenuRef}>
                   <IconUser className="icon" />
-                  <input
-                    list="advisor-list"
-                    className="filter-select"
-                    placeholder="Advisor (type to filter)"
-                    value={advisor === 'All' ? '' : advisor}
-                    onChange={(e) => {
-                      const v = e.target.value.trim();
-                      setAdvisor(v === '' ? 'All' : v);
-                    }}
-                    onBlur={(e) => { if (e.target.value.trim() === '') setAdvisor('All'); }}
-                  />
-                  <datalist id="advisor-list">
-                    {advisorOptions.map(opt => (
-                      <option key={opt} value={opt} />
-                    ))}
-                  </datalist>
+                  <button
+                    type="button"
+                    className="multi-toggle"
+                    onClick={() => setAdvisorOpen(v => !v)}
+                    aria-haspopup="true"
+                    aria-expanded={advisorOpen}
+                  >
+                    {advisor === 'All' ? 'All advisors' : advisor}
+                  </button>
                   <svg className="chevron-icon" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
+
+                  {advisorOpen && (
+                    <div className="multi-menu advisor-menu">
+                      <div className="multi-header">Filter by advisor</div>
+                      <div className="multi-search-wrap">
+                        <input
+                          className="multi-search"
+                          type="text"
+                          placeholder="Search advisors..."
+                          value={advisorQuery}
+                          onChange={(e) => setAdvisorQuery(e.target.value)}
+                          autoFocus
+                        />
+                      </div>
+                      <div className="multi-scroll">
+                        <label className="multi-item">
+                          <input
+                            type="radio"
+                            name="advisor-choice"
+                            checked={advisor === 'All'}
+                            onChange={() => { setAdvisor('All'); setAdvisorOpen(false); setAdvisorQuery(''); }}
+                          />
+                          <span>All advisors</span>
+                        </label>
+                        {advisorOptions
+                          .filter(opt => (opt || '').toLowerCase().includes(advisorQuery.toLowerCase()))
+                          .map(opt => (
+                            <label key={opt} className="multi-item">
+                              <input
+                                type="radio"
+                                name="advisor-choice"
+                                checked={advisor === opt}
+                                onChange={() => { setAdvisor(opt); setAdvisorOpen(false); setAdvisorQuery(''); }}
+                              />
+                              <span>{opt}</span>
+                            </label>
+                          ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Time select */}
@@ -851,6 +889,17 @@ const todoUrls = [
                     </div>
                   )}
                 </div>
+
+                {/* Clear filters (broom) to the right of All industries */}
+                <button
+                  type="button"
+                  className="filter-pill broom-pill"
+                  onClick={clearFilters}
+                  title="Clear all filters"
+                  aria-label="Clear all filters"
+                >
+                  <img src={broom_icon} alt="Clear all" />
+                </button>
               </div>
 
               {/* Status pill bar */}
@@ -870,13 +919,7 @@ const todoUrls = [
                     {p.label}
                   </button>
                 ))}
-                <button
-                  className="status-pill"
-                  onClick={clearFilters}
-                  title="Reset all filters"
-                >
-                  CLEAR ALL
-                </button>
+
               </div>
             </div>
 
