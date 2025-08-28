@@ -10,9 +10,9 @@ import light_mode_icon from '../assets/light_mode.svg';
 import dark_mode_icon from '../assets/dark_mode.svg';
 import Sidebar from "./Sidebar";
 import FollowUpModal from "./FollowUpModal";
-
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
+
 
 export default function FollowUp() {
   const [doneSubmissions, setDoneSubmissions] = useState([]);
@@ -34,7 +34,7 @@ export default function FollowUp() {
     } catch {}
     return 'light';
   });
-
+  
   const toggleTheme = () => {
     setTheme((t) => {
       const next = t === 'dark' ? 'light' : 'dark';
@@ -46,23 +46,17 @@ export default function FollowUp() {
   // --- data fetch with loading state ---
   useEffect(() => {
     setLoading(true);
-    fetch(`${BACKEND_URL}/api/followup`)
+   fetch(`${BACKEND_URL}/api/followup`)
+
       .then((res) => res.json())
       .then((data) => {
-        // If backend returned an error object or anything non-array, guard it
-        if (!Array.isArray(data)) {
-          console.error("Follow-up API did not return array:", data);
-          setDoneSubmissions([]);
-          return;
-        }
-        const deletedIds = JSON.parse(localStorage.getItem("softDeletedFollowUps") || "[]");
+        const deletedIds = JSON.parse(
+          localStorage.getItem("softDeletedFollowUps") || "[]"
+        );
         const filtered = data.filter((item) => !deletedIds.includes(item.id));
         setDoneSubmissions(filtered);
       })
-      .catch((err) => {
-        console.error("Error fetching follow-ups:", err);
-        setDoneSubmissions([]);
-      })
+      .catch((err) => console.error("Error fetching follow-ups:", err))
       .finally(() => setLoading(false));
   }, []);
 
@@ -78,7 +72,11 @@ export default function FollowUp() {
     const domain = (email || "").split("@")[1]?.toLowerCase() || "";
     if (domain.includes("gmail.com"))
       return `https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${encodedSubject}&body=${encodedBody}`;
-    if (domain.includes("outlook.com") || domain.includes("hotmail.com") || domain.includes("live.com"))
+    if (
+      domain.includes("outlook.com") ||
+      domain.includes("hotmail.com") ||
+      domain.includes("live.com")
+    )
       return `https://outlook.office.com/mail/deeplink/compose?to=${email}&subject=${encodedSubject}&body=${encodedBody}`;
     if (domain.includes("yahoo.com"))
       return `https://compose.mail.yahoo.com/?to=${email}&subject=${encodedSubject}&body=${encodedBody}`;
@@ -107,7 +105,9 @@ export default function FollowUp() {
       window.history.replaceState({}, document.title, cleanUrl);
 
       const subject = "Follow-Up on Your Ummah Professionals Mentorship";
-      const body = `Hi ${studentName},\n\nI hope you're doing well! I'm following up to see if you'd like a second mentorship session.\nIf you're interested, let me know and we can schedule a new meeting.\n\n- ${emailParam || mentorEmail}`;
+      const body = `Hi ${studentName},\n\nI hope you're doing well! I'm following up to see if you'd like a second mentorship session.\nIf you're interested, let me know and we can schedule a new meeting.\n\n- ${
+        emailParam || mentorEmail
+      }`;
       const url = getWebmailUrl(studentEmail, subject, body);
       setTimeout(() => window.open(url, "_blank"), 400);
     }
@@ -115,16 +115,24 @@ export default function FollowUp() {
 
   // Soft delete (UI only)
   const handleSoftDelete = (id) => {
+    // Find the submission to get the name for confirmation
     const submission = doneSubmissions.find(item => item.id === id);
     const name = submission?.name || 'this meeting';
+    
     if (!window.confirm(`Are you sure you want to delete ${name}? This will hide it from the list.`)) {
       return;
     }
+    
     setDoneSubmissions((prev) => prev.filter((item) => item.id !== id));
-    const deletedIds = JSON.parse(localStorage.getItem("softDeletedFollowUps") || "[]");
+    const deletedIds = JSON.parse(
+      localStorage.getItem("softDeletedFollowUps") || "[]"
+    );
     if (!deletedIds.includes(id)) {
       deletedIds.push(id);
-      localStorage.setItem("softDeletedFollowUps", JSON.stringify(deletedIds));
+      localStorage.setItem(
+        "softDeletedFollowUps",
+        JSON.stringify(deletedIds)
+      );
     }
   };
 
@@ -179,27 +187,29 @@ export default function FollowUp() {
       (!selectedProfession || item.industry === selectedProfession)
   );
 
-  // Handle propose meeting from modal
-  const handleProposeMeeting = (dateTime) => {
-    if (!selected) return;
+ // Handle propose meeting from modal
+const handleProposeMeeting = (dateTime) => {
+  if (!selected) return;
 
-    sessionStorage.setItem("studentId", selected.id);
-    sessionStorage.setItem("meetingTime", dateTime.toISOString());
-    sessionStorage.setItem("fromFollowUp", "true");
+  sessionStorage.setItem("studentId", selected.id);
+  sessionStorage.setItem("meetingTime", dateTime.toISOString());
+  sessionStorage.setItem("fromFollowUp", "true");
 
-    const me = sessionStorage.getItem("mentorEmail") || mentorEmail;
-    if (!me) {
-      // backend login
-      window.location.href = `${BACKEND_URL}/auth/login`;
-      return;
-    }
-    // frontend confirm page
-    window.location.href = `${FRONTEND_URL}/schedule-confirm?email=${me}`;
-  };
+  const me = sessionStorage.getItem("mentorEmail") || mentorEmail;
+  if (!me) {
+    // backend login
+    window.location.href = `${BACKEND_URL}/auth/login`;
+    return;
+  }
+  // frontend confirm page
+  window.location.href = `${FRONTEND_URL}/schedule-confirm?email=${me}`;
+};
+ 
+
 
   return (
     <div className={`app-container ${theme === 'dark' ? 'theme-dark' : ''}`}>
-      {/* Header */}
+      {/* Use same header styling as dashboard */}
       <header className="app-header">
         <div className="main-header">
           <div className="admin-header-left">
@@ -209,6 +219,7 @@ export default function FollowUp() {
           <h1>Follow-Up</h1>
 
           <div className="admin-header-right">
+            {/* Theme toggle */}
             <button
               className="theme-toggle"
               aria-label="Toggle dark mode"
@@ -231,7 +242,7 @@ export default function FollowUp() {
         </div>
       </header>
 
-      {/* Filters */}
+      {/* Use same filter controls as dashboard */}
       <div className="filter-controls">
         <div className="toolbar-left">
           {/* Search pill */}
@@ -241,16 +252,16 @@ export default function FollowUp() {
               alt="Search" 
               className="search-icon"
               onClick={() => {
-                document.querySelector('.search-pill input')?.focus();
+                document.querySelector('.search-pill input').focus();
               }}
             />
-            <input
-              type="text"
-              placeholder="Search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="Search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
 
           {/* Filter dropdown pill */}
           <div className="filter-pill">
@@ -259,130 +270,141 @@ export default function FollowUp() {
               alt="Filter" 
               className="filter-icon"
               onClick={() => {
-                document.querySelector('.filter-pill select')?.click();
+                document.querySelector('.filter-pill select').click();
               }}
             />
-            <select
-              value={selectedProfession}
-              onChange={(e) => setSelectedProfession(e.target.value)}
-            >
-              <option value="">Filter by Profession</option>
+          <select
+            value={selectedProfession}
+            onChange={(e) => setSelectedProfession(e.target.value)}
+          >
+            <option value="">Filter by Profession</option>
               {loading ? [] : [...new Set(doneSubmissions.map((s) => s.industry).filter(Boolean))].map((industry) => (
                 <option key={industry} value={industry}>
                   {industry}
                 </option>
               ))}
-            </select>
+          </select>
             <svg 
               className="chevron-icon" 
               viewBox="0 0 20 20" 
               fill="currentColor"
               onClick={() => {
-                document.querySelector('.filter-pill select')?.click();
+                document.querySelector('.filter-pill select').click();
               }}
             >
               <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
+          </svg>
           </div>
         </div>
       </div>
 
-      {/* List */}
       <div className="content-container">
+        {/* Column headers using same structure as dashboard */}
         <div className="dash-card header-card">
           <div className="card-content">
-            <div className="dash-col-left"><div className="header-text">NAME</div></div>
-            <div className="dash-col-avail"><div className="header-text">AVAILABILITY</div></div>
-            <div className="dash-col-industry"><div className="header-text">INDUSTRY</div></div>
-            <div className="dash-col-picked"><div className="header-text">STATUS</div></div>
-            <div className="dash-col-status"><div className="header-text">ACTIONS</div></div>
-          </div>
+            <div className="dash-col-left">
+              <div className="header-text">NAME</div>
+            </div>
+            <div className="dash-col-avail">
+              <div className="header-text">AVAILABILITY</div>
+            </div>
+            <div className="dash-col-industry">
+              <div className="header-text">INDUSTRY</div>
+            </div>
+            <div className="dash-col-picked">
+              <div className="header-text">STATUS</div>
+            </div>
+            <div className="dash-col-status">
+              <div className="header-text">ACTIONS</div>
         </div>
+        </div>
+      </div>
 
+        {/* List using dashboard card styling */}
         {loading ? (
           <p className="status-text">Loading submissions...</p>
         ) : (
           <div className="submissions-grid">
-            {visibleRows.length === 0 && (
+        {visibleRows.length === 0 && (
               <p className="status-text">No completed meetings yet.</p>
-            )}
+        )}
 
-            {visibleRows.map((item) => (
-              <div
-                key={item.id}
-                className="dash-card"
-                onClick={() => setSelected(item)}
-              >
-                <div className="card-content">
-                  {/* Left column: Name and Email */}
-                  <div className="dash-col-left">
-                    <div className="dash-name">{item.name}</div>
-                    <div className="dash-email">{item.email}</div>
+          {visibleRows.map((item) => (
+            <div
+              key={item.id}
+              className="dash-card"
+              onClick={() => setSelected(item)}
+            >
+              <div className="card-content">
+                {/* Left column: Name and Email */}
+                <div className="dash-col-left">
+                  <div className="dash-name">{item.name}</div>
+                  <div className="dash-email">{item.email}</div>
+                </div>
+
+                {/* Availability column */}
+                <div className="dash-col-avail">
+                  {renderAvailabilityChips(item.availability)}
+              </div>
+
+                {/* Industry column */}
+                <div className="dash-col-industry">{renderIndustryPills(item.industry)}</div>
+
+                {/* Status column */}
+                <div className="dash-col-picked">
+                  <div 
+                    className="status-tag" 
+                    style={theme === 'dark' ? { backgroundColor: '#0f2f22', color: '#86efac' } : { backgroundColor: '#DCFEE7', color: '#17803D' }}
+                  >
+                    DONE
                   </div>
+              </div>
 
-                  {/* Availability column */}
-                  <div className="dash-col-avail">
-                    {renderAvailabilityChips(item.availability)}
-                  </div>
-
-                  {/* Industry column */}
-                  <div className="dash-col-industry">{renderIndustryPills(item.industry)}</div>
-
-                  {/* Status column */}
-                  <div className="dash-col-picked">
-                    <div 
-                      className="status-tag" 
-                      style={theme === 'dark' ? { backgroundColor: '#0f2f22', color: '#86efac' } : { backgroundColor: '#DCFEE7', color: '#17803D' }}
-                    >
-                      DONE
-                    </div>
-                  </div>
-
-                  {/* Actions column */}
-                  <div className="dash-col-status" style={{ display: 'flex', gap: '10px', flexDirection: 'row-reverse' }}>
-                    <button
-                      className="delete-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSoftDelete(item.id);
-                      }}
-                    >
-                      DELETE
-                    </button>
-                    <button
-                      className="message-btn"
-                      style={{
-                        background: '#024B6E',
-                        color: '#fff',
-                        boxShadow: '0 10px 22px rgba(2,75,110,0.35)',
-                        borderRadius: '18px',
-                        padding: '12px 18px',
-                        fontWeight: '700',
-                        letterSpacing: '.2px',
-                        border: 'none',
-                        cursor: 'pointer',
-                        transition: 'transform .15s ease, filter .15s ease',
-                        userSelect: 'none'
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const subject = "Follow-Up on Your Ummah Professionals Mentorship";
-                        const body = `Hi ${item.name},\n\nI hope you're doing well! I'm following up to see if you'd like a second mentorship session.\nIf you're interested, let me know and we can schedule a new meeting.\n\n- ${mentorEmail}`;
-                        const url = getWebmailUrl(item.email, subject, body);
-                        window.open(url, "_blank");
-                      }}
-                    >
-                      MESSAGE
-                    </button>
-                  </div>
+                {/* Actions column */}
+                <div className="dash-col-status" style={{ display: 'flex', gap: '10px', flexDirection: 'row-reverse' }}>
+                  <button
+                    className="delete-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSoftDelete(item.id);
+                    }}
+                  >
+                    DELETE
+                  </button>
+                  <button
+                    className="message-btn"
+                    style={{
+                      background: '#024B6E',
+                      color: '#fff',
+                      boxShadow: '0 10px 22px rgba(2,75,110,0.35)',
+                      borderRadius: '18px',
+                      padding: '12px 18px',
+                      fontWeight: '700',
+                      letterSpacing: '.2px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'transform .15s ease, filter .15s ease',
+                      userSelect: 'none'
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const subject = "Follow-Up on Your Ummah Professionals Mentorship";
+                      const body = `Hi ${item.name},\n\nI hope you're doing well! I'm following up to see if you'd like a second mentorship session.\nIf you're interested, let me know and we can schedule a new meeting.\n\n- ${mentorEmail}`;
+                      const url = getWebmailUrl(item.email, subject, body);
+                      window.open(url, "_blank");
+                    }}
+                  >
+                    MESSAGE
+                  </button>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            </div>
+          ))}
+                    </div>
+                  )}
+                </div>
 
-      {/* Modal */}
+      {/* Use the new DashboardModal-based modal */}
       {selected && (
         <div className="modal-overlay" onClick={() => setSelected(null)}>
           <FollowUpModal
