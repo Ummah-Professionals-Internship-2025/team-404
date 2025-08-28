@@ -18,8 +18,8 @@ export default function Login() {
   }, [navigate]);
 
   const handleLogin = () => {
-    window.location.href = "http://localhost:5050/auth/login-basic";
-  };
+  window.location.href = `${BACKEND_URL}/auth/login-basic`;
+};
 
   return (
     <div className="login-container">
