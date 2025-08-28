@@ -94,9 +94,7 @@
   cursor: pointer;
   padding: 10px 1px;
   transition: all 0.3s ease;
-  white-space: nowrap;            /* prevent wrap on hover */
   display: inline-flex;           /* keep icon + text on one line */
-  align-items: center;
 }
 
 .sidebar button .exit-admin-icon{
@@ -119,7 +117,6 @@
 
 .sidebar button:hover {
   font-size: 1.2rem;
-  font-size: inherit;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
