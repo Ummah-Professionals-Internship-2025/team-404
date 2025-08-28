@@ -445,6 +445,16 @@
   background-clip: padding-box, border-box;
 }
 
+.admin-page .status-pill-done.active {
+  color: #17803D !important;
+  border: 2px solid transparent;
+  background-image:
+    linear-gradient(#DCFEE7, #DCFEE7),
+    linear-gradient( #DCFEE7, #17803D) !important;
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
 .admin-page .status-pill-canceled.active {
   background: #EDF2F6;
   color: #595F69;
@@ -537,6 +547,12 @@
   background: #20190b;
   color: #f8d473;
   border: 2px solid #f8d473;
+}
+
+.admin-page.theme-dark .status-pill-done.active {
+  background: #0d4c24;
+  color: #b2e6c2;
+  border: 2px solid #0d4c24;
 }
 
 .admin-page.theme-dark .status-pill-canceled.active {
