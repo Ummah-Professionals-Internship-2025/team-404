@@ -7,6 +7,9 @@ import os
 import pathlib
 from db import log_mentor_action
 
+# Use env vars for backend + frontend URLs
+BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:5050")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 auth_bp = Blueprint("auth", __name__)
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # Enable HTTP for localhost testing
@@ -14,7 +17,6 @@ os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # Enable HTTP for localhost tes
 # In-memory token storage: { email: credentials }
 mentor_tokens = {}
 
-CLIENT_SECRETS_FILE = str(pathlib.Path(__file__).resolve().parent.parent / "credentials" / "oauth_client_secret.json")
 SCOPES = [
     "https://www.googleapis.com/auth/calendar.events",
     "https://www.googleapis.com/auth/calendar",
@@ -25,51 +27,71 @@ SCOPES = [
 ]
 
 # ----------------------------
+# HELPER: Build Flow from env vars or JSON
+# ----------------------------
+def build_flow(redirect_path: str):
+    """Use env vars on Render, or JSON locally."""
+    client_id = os.getenv("GOOGLE_CLIENT_ID")
+    client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
+    redirect_uri = f"{BACKEND_URL}{redirect_path}"
+
+    if client_id and client_secret:
+        client_config = {
+            "web": {
+                "client_id": client_id,
+                "project_id": os.getenv("GOOGLE_PROJECT_ID", "ummah-scheduler"),
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                "client_secret": client_secret,
+                "redirect_uris": [redirect_uri],
+                "javascript_origins": [FRONTEND_URL, BACKEND_URL],
+            }
+        }
+        return Flow.from_client_config(client_config, scopes=SCOPES, redirect_uri=redirect_uri)
+    else:
+        CLIENT_SECRETS_FILE = str(
+            pathlib.Path(__file__).resolve().parent.parent / "credentials" / "oauth_client_secret.json"
+        )
+        return Flow.from_client_secrets_file(CLIENT_SECRETS_FILE, scopes=SCOPES, redirect_uri=redirect_uri)
+
+
+# ----------------------------
 # CLEAN LOGIN (DEFAULT)
 # ----------------------------
-
 @auth_bp.route("/auth/login-basic")
 def login_basic():
-    flow = Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE,
-        scopes=SCOPES,
-        redirect_uri="http://localhost:5050/oauth2callback"
-    )
+    flow = build_flow("/oauth2callback")
     auth_url, _ = flow.authorization_url(
-        prompt='consent',
-        access_type='offline',
-        include_granted_scopes='true'
+        prompt="consent",
+        access_type="offline",
+        include_granted_scopes="true"
     )
     session["flow"] = "login"
     return redirect(auth_url)
+
 
 # ----------------------------
 # MENTOR LOGIN FOR SCHEDULING (Propose Meeting)
 # ----------------------------
 @auth_bp.route("/auth/login")
 def login_schedule():
-    flow = Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE,
-        scopes=SCOPES,
-        redirect_uri="http://localhost:5050/oauth2callback"
-    )
+    flow = build_flow("/oauth2callback")
     auth_url, _ = flow.authorization_url(
-        prompt='consent',
-        access_type='offline',
-        include_granted_scopes='true'
+        prompt="consent",
+        access_type="offline",
+        include_granted_scopes="true"
     )
     session["flow"] = "schedule"
     return redirect(auth_url)
 
 
-
+# ----------------------------
+# OAUTH CALLBACK (Mentors)
+# ----------------------------
 @auth_bp.route("/oauth2callback")
 def oauth2callback():
-    flow = Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE,
-        scopes=SCOPES,
-        redirect_uri="http://localhost:5050/oauth2callback"
-    )
+    flow = build_flow("/oauth2callback")
     flow.fetch_token(authorization_response=request.url)
 
     credentials = flow.credentials
@@ -83,14 +105,13 @@ def oauth2callback():
     mentor_tokens[mentor_email] = credentials_to_dict(credentials)
     log_mentor_action(mentor_email, "login")
 
-
     flow_type = session.get("flow")
     if flow_type == "message":
-        return redirect(f"http://localhost:5173/followup?loggedIn=true&email={mentor_email}")
+        return redirect(f"{FRONTEND_URL}/followup?loggedIn=true&email={mentor_email}")
     elif flow_type == "schedule":
-        return redirect(f"http://localhost:5173/schedule-confirm?email={mentor_email}")
+        return redirect(f"{FRONTEND_URL}/schedule-confirm?email={mentor_email}")
     else:
-        return redirect(f"http://localhost:5173/login/callback?email={mentor_email}")
+        return redirect(f"{FRONTEND_URL}/login/callback?email={mentor_email}")
 
 
 # ----------------------------
@@ -98,12 +119,12 @@ def oauth2callback():
 # ----------------------------
 @auth_bp.route("/auth/login-message")
 def login_message():
-    flow = Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE,
-        scopes=SCOPES,
-        redirect_uri="http://localhost:5050/oauth2callback"
+    flow = build_flow("/oauth2callback")
+    auth_url, _ = flow.authorization_url(
+        prompt="consent",
+        access_type="offline",
+        include_granted_scopes="true"
     )
-    auth_url, _ = flow.authorization_url(prompt='consent', access_type='offline', include_granted_scopes='true')
     session["flow"] = "message"
     return redirect(auth_url)
 
@@ -119,6 +140,7 @@ def get_token():
         return jsonify({"error": "No credentials found"}), 404
     return jsonify(creds)
 
+
 # Utility to serialize credentials to dict
 def credentials_to_dict(creds):
     return {
@@ -130,23 +152,24 @@ def credentials_to_dict(creds):
         "scopes": creds.scopes
     }
 
+
 # ----------------------------
 # ADMIN LOGIN WITH GOOGLE
 # ----------------------------
 @auth_bp.route("/auth/admin-login")
 def admin_google_login():
-    flow = Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE,
-        scopes=SCOPES,
-        redirect_uri="http://localhost:5050/oauth2callback-admin"
+    flow = build_flow("/oauth2callback-admin")
+    auth_url, _ = flow.authorization_url(
+        prompt="consent",
+        access_type="offline",
+        include_granted_scopes="true"
     )
-    auth_url, _ = flow.authorization_url(prompt='consent', access_type='offline', include_granted_scopes='true')
 
     session["admin_flow"] = {
         "client_id": flow.client_config["client_id"],
         "client_secret": flow.client_config["client_secret"],
         "scopes": SCOPES,
-        "redirect_uri": "http://localhost:5050/oauth2callback-admin"
+        "redirect_uri": f"{BACKEND_URL}/oauth2callback-admin"
     }
     return redirect(auth_url)
 
@@ -161,9 +184,11 @@ def admin_oauth2callback():
 
     admin_email = user_info.get("email")
 
-    # Only allow a single admin email from env var
-    allowed_email = os.getenv("ADMIN_GOOGLE_EMAIL")
-    if admin_email != allowed_email:
+    # Support multiple admin emails (comma-separated in env var)
+    allowed_emails = os.getenv("ADMIN_GOOGLE_EMAILS", "").split(",")
+    allowed_emails = [e.strip() for e in allowed_emails if e.strip()]
+
+    if admin_email not in allowed_emails:
         return "Unauthorized", 403
 
     session["adminLoggedIn"] = True
