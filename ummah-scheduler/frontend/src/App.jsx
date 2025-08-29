@@ -11,6 +11,9 @@ import AdminDashboard from './components/AdminDashboard';
 import Login from './components/Login';
 import LoginCallback from './components/LoginCallback';
 import AdminStatistics from './components/AdminStatistics';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
+
 
 //Logos and SVGs
 import logo from './assets/white-horizontal.png'; 
