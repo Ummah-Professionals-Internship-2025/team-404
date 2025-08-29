@@ -4,8 +4,7 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import copy_icon from '../assets/copy.svg';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
+
 
 export default function FollowUpModal({
   student,
