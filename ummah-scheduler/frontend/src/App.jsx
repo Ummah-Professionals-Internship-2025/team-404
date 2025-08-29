@@ -11,9 +11,6 @@ import AdminDashboard from './components/AdminDashboard';
 import Login from './components/Login';
 import LoginCallback from './components/LoginCallback';
 import AdminStatistics from './components/AdminStatistics';
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
-
 
 //Logos and SVGs
 import logo from './assets/white-horizontal.png'; 
@@ -23,6 +20,8 @@ import alarm_icon from './assets/alarm.svg';
 import alarm_dark_icon from './assets/alarm_dark.svg';
 import light_mode_icon from './assets/light_mode.svg';
 import dark_mode_icon from './assets/dark_mode.svg';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
 
 
 
